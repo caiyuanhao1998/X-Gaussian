@@ -13,7 +13,7 @@
 
 <img src="3d_demo/teapot.gif" style="height:200px" /> 
 
-<img src="3d_demo/foot.gif" style="height:150px" /> 
+<img src="3d_demo/foot.gif" style="height:160px" /> 
 
 <img src="3d_demo/bonsai.gif" style="height:200px" /> 
 
