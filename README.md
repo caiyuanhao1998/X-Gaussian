@@ -21,7 +21,7 @@ Point Cloud Visualization
 
 &nbsp;
 
-<img src="3d_demo/training_process.gif" style="height:180px" /> 
+<img src="3d_demo/training_process.gif" style="height:190px" /> 
 
 Training Process Visualization
 
