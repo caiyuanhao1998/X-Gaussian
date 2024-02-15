@@ -17,6 +17,14 @@
 
 <img src="3d_demo/bonsai.gif" style="height:200px" /> 
 
+Point Cloud Visualization
+
+&nbsp;
+
+<img src="3d_demo/training_process.gif" style="height:180px" /> 
+
+Training Process Visualization
+
 </div>
 
 
