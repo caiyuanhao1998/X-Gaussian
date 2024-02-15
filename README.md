@@ -2,9 +2,11 @@
 
 <div align="center">
 
+[![arXiv](https://img.shields.io/badge/arxiv-paper-179bd3)](https://arxiv.org/abs/2311.10959)
+
 <h2> X-Gaussian </h2> 
 
-[![arXiv](https://img.shields.io/badge/arxiv-paper-179bd3)](https://arxiv.org/abs/2311.10959)
+
 
 
 <img src="3d_demo/teapot.gif" style="height:200px" /> 
