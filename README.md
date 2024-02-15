@@ -8,8 +8,6 @@
 [![Youtube](https://img.shields.io/badge/video-youtube-red)](https://www.youtube.com/watch?v=gDVf_Ngeghg)
 
 
-
-
 <img src="3d_demo/teapot.gif" style="height:200px" /> 
 
 <img src="3d_demo/foot.gif" style="height:160px" /> 
