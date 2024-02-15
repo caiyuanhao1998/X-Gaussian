@@ -3,7 +3,7 @@
 <div align="center">
 
 [![arXiv](https://img.shields.io/badge/arxiv-paper-179bd3)](https://arxiv.org/abs/2311.10959)
-[![Youtube](https://img.shields.io/badge/youtube-paper-red)](https://www.youtube.com/watch?v=gDVf_Ngeghg)
+[![Youtube](https://img.shields.io/badge/youtube-video-red)](https://www.youtube.com/watch?v=gDVf_Ngeghg)
 
 <h2> X-Gaussian </h2> 
 
