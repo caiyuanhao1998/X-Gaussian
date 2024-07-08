@@ -35,3 +35,24 @@ Training Process Visualization
 - **2024.06.03 :** Data, code, models, and training logs of our CVPR 2024 work [SAX-NeRF](https://github.com/caiyuanhao1998/SAX-NeRF) have been released. Feel free to use them :)
 - **2024.06.03 :** The datasets have been released on [Google Drive](https://drive.google.com/drive/folders/1SlneuSGkhk0nvwPjxxnpBCO59XhjGGJX?usp=sharing). Feel free to use them. 🚀
 - **2024.03.07 :** Our paper is on [arxiv](https://arxiv.org/abs/2403.04116) now. Code, models, and training logs will be released. Stay tuned. 💫
+
+
+
+## Citation
+```sh
+# X-Gaussian
+@inproceedings{x_gaussian,
+  title={Radiative gaussian splatting for efficient x-ray novel view synthesis},
+  author={Yuanhao Cai and Yixun Liang and Jiahao Wang and Angtian Wang and Yulun Zhang and Xiaokang Yang and Zongwei Zhou and Alan Yuille},
+  booktitle={ECCV},
+  year={2024}
+}
+
+# sax-nerf
+@inproceedings{sax_nerf,
+  title={Structure-Aware Sparse-View X-ray 3D Reconstruction},
+  author={Yuanhao Cai and Jiahao Wang and Alan Yuille and Zongwei Zhou and Angtian Wang},
+  booktitle={CVPR},
+  year={2024}
+}
+```
