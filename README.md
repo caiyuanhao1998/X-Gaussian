@@ -85,7 +85,7 @@ git clone https://gitlab.inria.fr/bkerbl/simple-knn.git
 pip install diff-gaussian-rasterization
 cd ..
 conda env create --file environment.yml
-conda activate x_gs
+conda activate x_gaussian
 ```
 
 &nbsp;
