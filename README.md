@@ -84,11 +84,16 @@ git clone https://github.com/caiyuanhao1998/X-Gaussian --recursive
 
 SET DISTUTILS_USE_SDK=1 # Windows only
 
-# install the environment
+# install the official environment of 3DGS
 conda env create --file environment.yml
 conda activate x_gaussian
 
-# Then put our 
+# Then put our rasterizer package into the diff-gaussian-rasterization
+mv cuda_rasterizer submodules/diff-gaussian-rasterization/
+
+# re-install the diff-gaussian-rasterization package
+cd submodules
+pip install diff-gaussian-rasterization
 ```
 
 &nbsp;
