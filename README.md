@@ -42,6 +42,27 @@ This is the official implementation of our ECCV 2024 paper "Radiative Gaussian S
 - **2024.06.03 :** The datasets have been released on [Google Drive](https://drive.google.com/drive/folders/1SlneuSGkhk0nvwPjxxnpBCO59XhjGGJX?usp=sharing). Feel free to use them. 🚀
 - **2024.03.07 :** Our paper is on [arxiv](https://arxiv.org/abs/2403.04116) now. Code, models, and training logs will be released. Stay tuned. 💫
 
+### Performance
+
+<details close>
+<summary><b>Novel View Synthesis</b></summary>
+
+![results1](/fig/nvs_1.png)
+
+![results2](/fig/nvs_2.png)
+
+</details>
+
+
+<details close>
+<summary><b>CT Reconstruction</b></summary>
+
+![results3](/fig/ct_1.png)
+
+![results4](/fig/ct_2.png)
+
+</details>
+
 
 
 ## Citation
