@@ -63,6 +63,69 @@ This is the official implementation of our ECCV 2024 paper "Radiative Gaussian S
 
 </details>
 
+### Coordinate System
+
+The coordinate system in circular cone-beam X-ray scanning follows the OpenCV standards. The transformation between the camera, world, and image coordinate systems is shown below.
+<div align="center">
+<p align="center"> <img src="fig/coordinate_system.png" width="800px"> </p>
+</div>
+
+&nbsp;
+
+## 1. Create Environment:
+
+We recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to set up an environment.
+
+``` sh
+# cloning some supported repo from official 3DGS
+git clone https://gitlab.inria.fr/sibr/sibr_core.git
+cd submodules
+git clone https://gitlab.inria.fr/bkerbl/simple-knn.git
+pip install diff-gaussian-rasterization
+cd ..
+conda env create --file environment.yml
+conda activate x_gs
+```
+
+&nbsp;
+
+
+## Prepare Dataset
+Download our processed datasets from [Google drive](https://drive.google.com/drive/folders/1SlneuSGkhk0nvwPjxxnpBCO59XhjGGJX?usp=sharing) or [Baidu disk](https://pan.baidu.com/s/18zc6jHeNvoUNAF6pUaL9eQ?pwd=cyh2). Then put the downloaded datasets into the folder `data/` as
+
+```sh
+  |--data
+      # The first five datasets are used in the our paper
+      |--chest_50.pickle
+      |--abdomen_50.pickle
+      |--foot_50.pickle
+      |--head_50.pickle
+      |--pancreas_50.pickle
+      # The rest datasets are from the X3D benchmark
+      |--aneurism_50.pickle
+      |--backpack_50.pickle
+      |--bonsai_50.pickle
+      |--box_50.pickle
+      |--carp_50.pickle
+      |--engine_50.pickle
+      |--leg_50.pickle
+      |--pelvis_50.pickle
+      |--teapot_50.pickle
+      |--jaw_50.pickle
+```
+
+`Note:` The first five datasets are used to do experiments in our paper. The rest datasets are from [the X3D benchmark](https://github.com/caiyuanhao1998/SAX-NeRF/).
+
+
+## Training and Testing
+
+```shell
+bash train.sh
+```
+
+## Acknowledgement
+
+Our code and data are heavily borrowed from [SAX-NeRF](https://github.com/caiyuanhao1998/SAX-NeRF/) and [3DGS](https://github.com/graphdeco-inria/gaussian-splatting)
 
 
 ## Citation
