@@ -35,6 +35,7 @@ This is the official implementation of our ECCV 2024 paper "Radiative Gaussian S
 
 
 ### News
+- **2024.09.01 :** Code have been released. Welcome to have a try 😆
 - **2024.07.01 :** Our X-Gaussian has been accepted by ECCV 2024! Code will be released before the start date of the conference (2024.09.29). Stay tuned. 🚀
 - **2024.06.03 :** Code for traditional methods has been released at [SAX-NeRF](https://github.com/caiyuanhao1998/SAX-NeRF). ✨
 - **2024.06.03 :** Code for fancy visualization and data generation has been released at [SAX-NeRF](https://github.com/caiyuanhao1998/SAX-NeRF). 🚀
