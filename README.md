@@ -116,6 +116,7 @@ Download our processed datasets from [Google drive](https://drive.google.com/dri
 
 `Note:` The first five datasets are used to do experiments in our paper. The rest datasets are from [the X3D benchmark](https://github.com/caiyuanhao1998/SAX-NeRF/).
 
+&nbsp;
 
 ## Training and Testing
 
@@ -123,10 +124,7 @@ Download our processed datasets from [Google drive](https://drive.google.com/dri
 bash train.sh
 ```
 
-## Acknowledgement
-
-Our code and data are heavily borrowed from [SAX-NeRF](https://github.com/caiyuanhao1998/SAX-NeRF/) and [3DGS](https://github.com/graphdeco-inria/gaussian-splatting)
-
+&nbsp;
 
 ## Citation
 ```sh
@@ -146,3 +144,10 @@ Our code and data are heavily borrowed from [SAX-NeRF](https://github.com/caiyua
   year={2024}
 }
 ```
+
+&nbsp;
+
+
+## Acknowledgement
+
+Our code and data are heavily borrowed from [SAX-NeRF](https://github.com/caiyuanhao1998/SAX-NeRF/) and [3DGS](https://github.com/graphdeco-inria/gaussian-splatting)
