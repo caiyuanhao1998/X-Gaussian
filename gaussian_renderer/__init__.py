@@ -54,7 +54,7 @@ def render(viewpoint_camera, pc : GaussianModel_Xray, pipe, bg_color : torch.Ten
         rotations = rotations,
         cov3D_precomp = cov3D_precomp)
 
-    return {"render": rendered_image,
+    return {"render": rendered_image.mean(dim=0, keepdim=True),
             "viewspace_points": screenspace_points,
             "visibility_filter" : radii > 0,           
             "radii": radii}
