@@ -75,17 +75,20 @@ The coordinate system in circular cone-beam X-ray scanning follows the OpenCV st
 
 ## 1. Create Environment:
 
-We recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to set up an environment.
+We recommend using [Conda](https://docs.conda.io/en/latest/miniconda.html) to set up the environment.
 
 ``` sh
-# cloning some supported repo from official 3DGS
-git clone https://gitlab.inria.fr/sibr/sibr_core.git
-cd submodules
-git clone https://gitlab.inria.fr/bkerbl/simple-knn.git
-pip install diff-gaussian-rasterization
-cd ..
+# cloning our repo
+git clone https://github.com/caiyuanhao1998/X-Gaussian --recursive
+
+
+SET DISTUTILS_USE_SDK=1 # Windows only
+
+# install the environment
 conda env create --file environment.yml
 conda activate x_gaussian
+
+# Then put our 
 ```
 
 &nbsp;
