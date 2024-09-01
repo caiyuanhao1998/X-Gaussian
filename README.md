@@ -7,6 +7,8 @@
 [![arXiv](https://img.shields.io/badge/paper-arxiv-179bd3)](https://arxiv.org/abs/2403.04116)
 [![Youtube](https://img.shields.io/badge/video-youtube-red)](https://www.youtube.com/watch?v=gDVf_Ngeghg)
 
+<h2> Radiative Gaussian Splatting for Efficient X-ray Novel View Synthesis </h2> 
+
 
 <img src="3d_demo/teapot.gif" style="height:200px" /> 
 
@@ -26,6 +28,10 @@ Training Process Visualization
 
 
 &nbsp;
+
+
+### Introduction
+This is the official implementation of our ECCV 2024 paper "Radiative Gaussian Splatting for Efficient X-ray Novel View Synthesis". Our X-Gaussian is SfM-free. If you find this repo useful, please give it a star ⭐ and consider citing our paper. Thank you.
 
 
 ### News
