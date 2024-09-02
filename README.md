@@ -132,8 +132,30 @@ Download our processed datasets from [Google drive](https://drive.google.com/dri
 
 ## Training and Testing
 
+You can download our trained Gaussian point clouds from [Google Drive](https://drive.google.com/drive/folders/1-JqRXiwl1zjVKuBRL3F01cWHcyAe8f2F?usp=sharing) or [Baidu Disk](https://pan.baidu.com/s/1GWE5By6u03n2l6nnFhOE0g?pwd=cyh2) (code: `cyh2`) as
+
+
+
+We share the training log for your convienience to debug. Please download them from Google Drive or Baidu Disk (code: `cyh2`). To make the training and evaluation easier, your can directly run the `train.sh` file by
+
 ```shell
 bash train.sh
+```
+
+Or you can separately train on each scene like
+
+```shell
+
+python3 train.py --config config/chest.yaml --eval
+
+python3 train.py --config config/foot.yaml --eval
+
+python3 train.py --config config/abdomen.pickle --eval
+
+python3 train.py --config config/head.pickle --eval
+
+python3 train.py --config config/pancreas.pickle --eval
+
 ```
 
 &nbsp;
