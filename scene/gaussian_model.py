@@ -47,13 +47,13 @@ class GaussianModel_Xray:
         self.optimizer = None
         self.percent_dense = 0
         self.spatial_lr_scale = 0
-        self.setup_functions()
+        self.setup_functions()              
 
     # 返回一个元组
     def capture(self):
         return (
             self.active_sh_degree,          
-            self._xyz,                     
+            self._xyz,                      
             self._features_dc,              
             self._features_rest,            
             self._scaling,                  
@@ -66,7 +66,8 @@ class GaussianModel_Xray:
             self.spatial_lr_scale,          
         )
     
-
+    
+    
     def restore(self, model_args, training_args):
         (self.active_sh_degree, 
         self._xyz, 
@@ -85,7 +86,7 @@ class GaussianModel_Xray:
         self.denom = denom
         self.optimizer.load_state_dict(opt_dict)
 
-
+    
     @property
     def get_scaling(self):
         return self.scaling_activation(self._scaling)
@@ -111,21 +112,21 @@ class GaussianModel_Xray:
     def get_covariance(self, scaling_modifier = 1):
         return self.covariance_activation(self.get_scaling, scaling_modifier, self._rotation)
 
-
+    
     def oneupSHdegree(self):
         if self.active_sh_degree < self.max_sh_degree:
             self.active_sh_degree += 1
 
-
+   
     def create_from_pcd(self, pcd : BasicPointCloud, spatial_lr_scale : float):
         self.spatial_lr_scale = spatial_lr_scale
         fused_point_cloud = torch.tensor(np.asarray(pcd.points)).float().cuda()     
-        fused_color = RGB2SH(torch.tensor(np.asarray(pcd.colors)).float().cuda())
+        fused_color = RGB2SH(torch.tensor(np.asarray(pcd.colors)).float().cuda())   
 
-
-        features = torch.zeros((fused_color.shape[0], 1, (self.max_sh_degree + 1) ** 2)).float().cuda()
-        features[:, :1, 0 ] = fused_color.mean(dim=1, keepdim=True)
-        features[:, 1:, 1:] = 0.0
+        
+        features = torch.zeros((fused_color.shape[0], 3, (self.max_sh_degree + 1) ** 2)).float().cuda()
+        features[:, :3, 0 ] = fused_color
+        features[:, 3:, 1:] = 0.0
 
         print("Number of points at initialisation : ", fused_point_cloud.shape[0])
 
@@ -136,24 +137,23 @@ class GaussianModel_Xray:
 
         opacities = inverse_sigmoid(0.1 * torch.ones((fused_point_cloud.shape[0], 1), dtype=torch.float, device="cuda"))
 
-        self._xyz = nn.Parameter(fused_point_cloud.requires_grad_(True))    
-        # features: [num_points, 3, 16]
-        self._features_dc = nn.Parameter(features[:,:,0:1].transpose(1, 2).contiguous().requires_grad_(True))   
-        self._features_rest = nn.Parameter(features[:,:,1:].transpose(1, 2).contiguous().requires_grad_(True))  
-        self._scaling = nn.Parameter(scales.requires_grad_(True))               
-        self._rotation = nn.Parameter(rots.requires_grad_(True))                
-        self._opacity = nn.Parameter(opacities.requires_grad_(True))            
-        self.max_radii2D = torch.zeros((self.get_xyz.shape[0]), device="cuda")  
-        # stx()
+        self._xyz = nn.Parameter(fused_point_cloud.requires_grad_(True))    # [num_points, 3]
+
+        self._features_dc = nn.Parameter(features[:,:,0:1].transpose(1, 2).contiguous().requires_grad_(True))   # [num_points, 1, 3]
+        self._features_rest = nn.Parameter(features[:,:,1:].transpose(1, 2).contiguous().requires_grad_(True))  # [num_points, 15, 3]
+        self._scaling = nn.Parameter(scales.requires_grad_(True))               # [num_points, 3]
+        self._rotation = nn.Parameter(rots.requires_grad_(True))                # [num_points, 4]
+        self._opacity = nn.Parameter(opacities.requires_grad_(True))            # [num_points, 1]
+        self.max_radii2D = torch.zeros((self.get_xyz.shape[0]), device="cuda")  # [num_points], 点云拍在二维平面上的最大半径
+        
 
 
 
-   
+    
     def training_setup(self, training_args):
         self.percent_dense = training_args.percent_dense
         self.xyz_gradient_accum = torch.zeros((self.get_xyz.shape[0], 1), device="cuda")
         self.denom = torch.zeros((self.get_xyz.shape[0], 1), device="cuda")
-
 
         l = [
             {'params': [self._xyz], 'lr': training_args.position_lr_init * self.spatial_lr_scale, "name": "xyz"},
@@ -172,14 +172,13 @@ class GaussianModel_Xray:
                                                     max_steps=training_args.position_lr_max_steps)
 
 
+
     def update_learning_rate(self, iteration):
-        ''' Learning rate scheduling per step '''
         for param_group in self.optimizer.param_groups:
             if param_group["name"] == "xyz":
                 lr = self.xyz_scheduler_args(iteration)
                 param_group['lr'] = lr
                 return lr
-
 
 
     def construct_list_of_attributes(self):
@@ -194,7 +193,6 @@ class GaussianModel_Xray:
         for i in range(self._rotation.shape[1]):
             l.append('rot_{}'.format(i))
         return l
-
 
 
     def save_ply(self, path):
@@ -232,16 +230,19 @@ class GaussianModel_Xray:
                         np.asarray(plydata.elements[0]["z"])),  axis=1)
         opacities = np.asarray(plydata.elements[0]["opacity"])[..., np.newaxis]
 
-        features_dc = np.zeros((xyz.shape[0], 1, 1))
+        features_dc = np.zeros((xyz.shape[0], 3, 1))
         features_dc[:, 0, 0] = np.asarray(plydata.elements[0]["f_dc_0"])
+        features_dc[:, 1, 0] = np.asarray(plydata.elements[0]["f_dc_1"])
+        features_dc[:, 2, 0] = np.asarray(plydata.elements[0]["f_dc_2"])
 
         extra_f_names = [p.name for p in plydata.elements[0].properties if p.name.startswith("f_rest_")]
         extra_f_names = sorted(extra_f_names, key = lambda x: int(x.split('_')[-1]))
-        assert len(extra_f_names)==1*(self.max_sh_degree + 1) ** 2 - 1
+        assert len(extra_f_names)==3*(self.max_sh_degree + 1) ** 2 - 3
         features_extra = np.zeros((xyz.shape[0], len(extra_f_names)))
         for idx, attr_name in enumerate(extra_f_names):
             features_extra[:, idx] = np.asarray(plydata.elements[0][attr_name])
-        features_extra = features_extra.reshape((features_extra.shape[0], 1, (self.max_sh_degree + 1) ** 2 - 1))
+        
+        features_extra = features_extra.reshape((features_extra.shape[0], 3, (self.max_sh_degree + 1) ** 2 - 1))
 
         scale_names = [p.name for p in plydata.elements[0].properties if p.name.startswith("scale_")]
         scale_names = sorted(scale_names, key = lambda x: int(x.split('_')[-1]))
@@ -266,6 +267,7 @@ class GaussianModel_Xray:
 
 
 
+
     def replace_tensor_to_optimizer(self, tensor, name):
         optimizable_tensors = {}                            
         for group in self.optimizer.param_groups:           
@@ -281,6 +283,8 @@ class GaussianModel_Xray:
                 optimizable_tensors[group["name"]] = group["params"][0]
         return optimizable_tensors
 
+
+    
 
     def _prune_optimizer(self, mask):
         optimizable_tensors = {}
@@ -302,6 +306,7 @@ class GaussianModel_Xray:
 
 
 
+
     def prune_points(self, mask):
         valid_points_mask = ~mask       
         optimizable_tensors = self._prune_optimizer(valid_points_mask)
@@ -317,6 +322,7 @@ class GaussianModel_Xray:
 
         self.denom = self.denom[valid_points_mask]
         self.max_radii2D = self.max_radii2D[valid_points_mask]
+
 
 
     def cat_tensors_to_optimizer(self, tensors_dict):
@@ -342,6 +348,7 @@ class GaussianModel_Xray:
         return optimizable_tensors
 
 
+
     def densification_postfix(self, new_xyz, new_features_dc, new_features_rest, new_opacities, new_scaling, new_rotation):
         d = {"xyz": new_xyz,
         "f_dc": new_features_dc,
@@ -361,6 +368,7 @@ class GaussianModel_Xray:
         self.xyz_gradient_accum = torch.zeros((self.get_xyz.shape[0], 1), device="cuda")
         self.denom = torch.zeros((self.get_xyz.shape[0], 1), device="cuda")
         self.max_radii2D = torch.zeros((self.get_xyz.shape[0]), device="cuda")
+
 
 
     def densify_and_split(self, grads, grad_threshold, scene_extent, N=2):
