@@ -94,6 +94,9 @@ mv cuda_rasterizer submodules/diff-gaussian-rasterization/
 # re-install the diff-gaussian-rasterization package
 cd submodules
 pip install diff-gaussian-rasterization
+
+# back to the main folder
+cd ..
 ```
 
 &nbsp;
