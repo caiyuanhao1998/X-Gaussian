@@ -1,12 +1,9 @@
-source activate x_gaussian
+python3 train.py --config config/chest.yaml --eval
 
-python3 train.py -s data/chest.pickle --scene chest  --eval
+python3 train.py --config config/foot.yaml --eval
 
-python3 train.py -s data/foot.pickle --scene foot  --eval
+python3 train.py --config config/abdomen.pickle --eval
 
-python3 train.py -s data/abdomen.pickle --scene abdomen  --eval
+python3 train.py --config config/head.pickle --eval
 
-python3 train.py -s data/head.pickle --scene head  --eval
-
-python3 train.py -s data/pancreas.pickle --scene pancreas  --eval
-
+python3 train.py --config config/pancreas.pickle --eval
