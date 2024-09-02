@@ -99,7 +99,7 @@ pip install submodules/diff-gaussian-rasterization
 &nbsp;
 
 
-## Prepare Dataset
+## 2. Prepare Dataset
 Download our processed datasets from [Google drive](https://drive.google.com/drive/folders/1SlneuSGkhk0nvwPjxxnpBCO59XhjGGJX?usp=sharing) or [Baidu disk](https://pan.baidu.com/s/18zc6jHeNvoUNAF6pUaL9eQ?pwd=cyh2). Then put the downloaded datasets into the folder `data/` as
 
 ```sh
@@ -127,7 +127,7 @@ Download our processed datasets from [Google drive](https://drive.google.com/dri
 
 &nbsp;
 
-## Training and Testing
+## 3. Training and Testing
 
 You can download our trained Gaussian point clouds from [Google Drive](https://drive.google.com/drive/folders/1-JqRXiwl1zjVKuBRL3F01cWHcyAe8f2F?usp=sharing) or [Baidu Disk](https://pan.baidu.com/s/1GWE5By6u03n2l6nnFhOE0g?pwd=cyh2) (code: `cyh2`) as
 
@@ -157,7 +157,20 @@ python3 train.py --config config/pancreas.pickle --eval
 
 &nbsp;
 
-## Citation
+
+## 4. Visualization
+
+We also provide code for the visualization of rotating the Gaussian point clouds
+
+```shell
+
+python point_cloud_vis.py
+
+```
+
+&nbsp;
+
+## 5. Citation
 ```sh
 # X-Gaussian
 @inproceedings{x_gaussian,
