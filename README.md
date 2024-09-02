@@ -35,7 +35,7 @@ This is the official implementation of our ECCV 2024 paper "Radiative Gaussian S
 
 
 ### News
-- **2024.09.01 :** Code have been released. Welcome to have a try 😆
+- **2024.09.01 :** Code, models, and training logs have been released. Welcome to have a try 😆
 - **2024.07.01 :** Our X-Gaussian has been accepted by ECCV 2024! Code will be released before the start date of the conference (2024.09.29). Stay tuned. 🚀
 - **2024.06.03 :** Code for traditional methods has been released at [SAX-NeRF](https://github.com/caiyuanhao1998/SAX-NeRF). ✨
 - **2024.06.03 :** Code for fancy visualization and data generation has been released at [SAX-NeRF](https://github.com/caiyuanhao1998/SAX-NeRF). 🚀
@@ -136,7 +136,7 @@ You can download our trained Gaussian point clouds from [Google Drive](https://d
 
 
 
-We share the training log for your convienience to debug. Please download them from Google Drive or Baidu Disk (code: `cyh2`). To make the training and evaluation easier, your can directly run the `train.sh` file by
+We share the training log for your convienience to debug. Please download them from [Google Drive](https://drive.google.com/drive/folders/1HKcy-luYLXTSH7vviu_djVtpbSdz_v6J?usp=sharing) or [Baidu Disk](https://pan.baidu.com/s/1amk0tnpH3hN9I-Qgjb_cEQ?pwd=cyh2) (code: `cyh2`). To make the training and evaluation easier, your can directly run the `train.sh` file by
 
 ```shell
 bash train.sh
