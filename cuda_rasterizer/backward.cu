@@ -1,19 +1,38 @@
+/*
+ * Copyright (C) 2023, Inria
+ * GRAPHDECO research group, https://team.inria.fr/graphdeco
+ * All rights reserved.
+ *
+ * This software is free for non-commercial, research and evaluation use 
+ * under the terms of the LICENSE.md file.
+ *
+ * For inquiries contact  george.drettakis@inria.fr
+ */
+
 #include "backward.h"
 #include "auxiliary.h"
 #include <cooperative_groups.h>
 #include <cooperative_groups/reduce.h>
 namespace cg = cooperative_groups;
 
-
-__device__ void computeColorFromSH(int idx, int deg, int max_coeffs, const glm::vec3* means, glm::vec3 campos, const float* shs, const bool* clamped, const float* dL_dcolor, glm::vec3* dL_dmeans, float* dL_dshs)
+// Backward pass for conversion of spherical harmonics to RGB for
+// each Gaussian.
+__device__ void computeColorFromSH(int idx, int deg, int max_coeffs, const glm::vec3* means, glm::vec3 campos, const float* shs, const bool* clamped, const glm::vec3* dL_dcolor, glm::vec3* dL_dmeans, glm::vec3* dL_dshs)
 {
-	const float* sh = ((const float*)shs) + idx * max_coeffs;
 
-	float dL_dRGB = dL_dcolor[idx];		
-	dL_dRGB *= clamped[idx] ? 0 : 1;
+	glm::vec3* sh = ((glm::vec3*)shs) + idx * max_coeffs;
 
-	float* dL_dsh = dL_dshs + idx * max_coeffs;		
+	// Use PyTorch rule for clamping: if clamping was applied,
+	// gradient becomes 0.
+	glm::vec3 dL_dRGB = dL_dcolor[idx];
+	dL_dRGB.x *= clamped[3 * idx + 0] ? 0 : 1;
+	dL_dRGB.y *= clamped[3 * idx + 1] ? 0 : 1;
+	dL_dRGB.z *= clamped[3 * idx + 2] ? 0 : 1;
 
+	// Target location for this Gaussian to write SH gradients to
+	glm::vec3* dL_dsh = dL_dshs + idx * max_coeffs;
+
+	// No tricks here, just high school-level calculus.
 	float dRGBdsh0 = SH_C0;
 	dL_dsh[0] = dRGBdsh0 * dL_dRGB;
 	if (deg > 0)
@@ -57,10 +76,11 @@ __device__ void computeColorFromSH(int idx, int deg, int max_coeffs, const glm::
 			}
 		}
 	}
-
 }
 
-
+// Backward version of INVERSE 2D covariance matrix computation
+// (due to length launched as separate kernel before other 
+// backward steps contained in preprocess)
 __global__ void computeCov2DCUDA(int P,
 	const float3* means,
 	const int* radii,
@@ -308,7 +328,7 @@ __global__ void preprocessCUDA(
 
 	// Compute gradient updates due to computing colors from SHs
 	if (shs)
-		computeColorFromSH(idx, D, M, (glm::vec3*)means, *campos, shs, clamped, (float*)dL_dcolor, (glm::vec3*)dL_dmeans, (float*)dL_dsh);
+		computeColorFromSH(idx, D, M, (glm::vec3*)means, *campos, shs, clamped, (glm::vec3*)dL_dcolor, (glm::vec3*)dL_dmeans, (glm::vec3*)dL_dsh);
 
 	// Compute gradient updates due to computing covariance from scale/rotation
 	if (scales)

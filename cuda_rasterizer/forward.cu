@@ -1,14 +1,35 @@
+/*
+ * Copyright (C) 2023, Inria
+ * GRAPHDECO research group, https://team.inria.fr/graphdeco
+ * All rights reserved.
+ *
+ * This software is free for non-commercial, research and evaluation use 
+ * under the terms of the LICENSE.md file.
+ *
+ * For inquiries contact  george.drettakis@inria.fr
+ */
+
 #include "forward.h"
 #include "auxiliary.h"
 #include <cooperative_groups.h>
 #include <cooperative_groups/reduce.h>
 namespace cg = cooperative_groups;
 
-
-__device__ float computeColorFromSH(int idx, int deg, int max_coeffs, const glm::vec3* means, glm::vec3 campos, const float* shs, bool* clamped)
+// Forward method for converting the input spherical harmonics
+// coefficients of each Gaussian to a simple RGB color.
+// 此处定义了一个设备函数, __device__是一个修饰符，用于声明在GPU设备上运行的函数或变量
+// glm::vec3 是一个 OpenGL Mathematics (GLM)库的数据类型。glm是命名空间，vec3是一个类，表示一个包含三个浮点数的向量，通常用于表示三维空间中的点或者向量
+__device__ glm::vec3 computeColorFromSH(int idx, int deg, int max_coeffs, const glm::vec3* means, glm::vec3 campos, const float* shs, bool* clamped)
 {
-	const float* sh = (const float*)(shs + idx * max_coeffs);
-	float result = SH_C0 * sh[0];
+	// idx: 高斯索引号 - 整数, deg: 球谐函数阶数 - 整数, max_coeffs: 球谐函数系数个数 - 整数, 
+	// means: 高斯均值 - glm::vec3*, campos: 相机位置 - glm::vec3, shs: 球谐函数系数 - float, clamped: 是否被截 - bool
+
+	// shs是一个指向float类型的指针，它指向一个包含所有高斯点云的球谐函数系数的数组。
+	// 每个高斯点云的球谐函数系数是一个glm::vec3类型的值，因此在使用时，需要将shs强制转换为glm::vec3类型的指针。
+	// 然后，通过索引idx和最大系数数量max_coeffs，可以找到特定高斯点云的球谐函数系数。
+	glm::vec3* sh = ((glm::vec3*)shs) + idx * max_coeffs;
+	// 初始颜色值，与 view direction 无关。球谐函数的常数系数在头文件 auxiliary.h 中定义
+	glm::vec3 result = SH_C0 * sh[0];
 
 	if (deg > 0)
 	{
@@ -38,12 +59,15 @@ __device__ float computeColorFromSH(int idx, int deg, int max_coeffs, const glm:
 	}
 	result += 0.5f;
 
-	clamped[idx] = (result < 0);
+	// RGB colors are clamped to positive values. If values are
+	// clamped, we need to keep track of this for the backward pass.
+	clamped[3 * idx + 0] = (result.x < 0);
+	clamped[3 * idx + 1] = (result.y < 0);
+	clamped[3 * idx + 2] = (result.z < 0);
 	return glm::max(result, 0.0f);
 }
 
-
-
+// Forward version of 2D covariance matrix computation
 __device__ float3 computeCov2D(const float3& mean, float focal_x, float focal_y, float tan_fovx, float tan_fovy, const float* cov3D, const float* viewmatrix)
 {
 	// The following models the steps outlined by equations 29
@@ -124,8 +148,7 @@ __device__ void computeCov3D(const glm::vec3 scale, float mod, const glm::vec4 r
 	cov3D[5] = Sigma[2][2];
 }
 
-
-
+// Perform initial steps for each Gaussian prior to rasterization.
 template<int C>
 __global__ void preprocessCUDA(int P, int D, int M,
 	const float* orig_points,
@@ -206,7 +229,7 @@ __global__ void preprocessCUDA(int P, int D, int M,
 	float my_radius = ceil(3.f * sqrt(max(lambda1, lambda2)));
 	float2 point_image = { ndc2Pix(p_proj.x, W), ndc2Pix(p_proj.y, H) };
 	uint2 rect_min, rect_max;
-	getRect(point_image, my_radius, rect_min, rect_max, grid);	
+	getRect(point_image, my_radius, rect_min, rect_max, grid);
 	if ((rect_max.x - rect_min.x) * (rect_max.y - rect_min.y) == 0)
 		return;
 
@@ -214,8 +237,10 @@ __global__ void preprocessCUDA(int P, int D, int M,
 	// spherical harmonics coefficients to RGB color.
 	if (colors_precomp == nullptr)
 	{
-		float result = computeColorFromSH(idx, D, M, (glm::vec3*)orig_points, *cam_pos, shs, clamped);
-		rgb[idx] = result;
+		glm::vec3 result = computeColorFromSH(idx, D, M, (glm::vec3*)orig_points, *cam_pos, shs, clamped);
+		rgb[idx * C + 0] = result.x;
+		rgb[idx * C + 1] = result.y;
+		rgb[idx * C + 2] = result.z;
 	}
 
 	// Store some useful helper data for the next steps.
@@ -227,8 +252,9 @@ __global__ void preprocessCUDA(int P, int D, int M,
 	tiles_touched[idx] = (rect_max.y - rect_min.y) * (rect_max.x - rect_min.x);
 }
 
-
-
+// Main rasterization method. Collaboratively works on one tile per
+// block, each thread treats one pixel. Alternates between fetching 
+// and rasterizing data.
 template <uint32_t CHANNELS>
 __global__ void __launch_bounds__(BLOCK_X * BLOCK_Y)
 renderCUDA(
@@ -343,7 +369,6 @@ renderCUDA(
 			out_color[ch * H * W + pix_id] = C[ch] + T * bg_color[ch];
 	}
 }
-
 
 void FORWARD::render(
 	const dim3 grid, dim3 block,
