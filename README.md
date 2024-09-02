@@ -85,6 +85,7 @@ git clone https://github.com/caiyuanhao1998/X-Gaussian --recursive
 SET DISTUTILS_USE_SDK=1 # Windows only
 
 # install the official environment of 3DGS
+cd X-Gaussian
 conda env create --file environment.yml
 conda activate x_gaussian
 
