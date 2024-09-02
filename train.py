@@ -2,6 +2,7 @@ import os
 import torch
 from random import randint
 from utils.loss_utils import l1_loss, ssim
+# from pytorch_msssim import ssim
 from gaussian_renderer import render
 import sys
 from scene import Scene, GaussianModel_Xray
@@ -12,6 +13,9 @@ from argparse import ArgumentParser, Namespace
 from arguments import ModelParams, PipelineParams, OptimizationParams
 import datetime
 import time
+import yaml
+
+from pdb import set_trace as stx
 
 
 def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoint_iterations, checkpoint, debug_from):
@@ -153,7 +157,9 @@ def training_report(exp_logger, iteration, Ll1, loss, l1_loss, elapsed, testing_
                 psnr_test /= len(config['cameras'])
                 ssim_test /= len(config['cameras'])
 
-
+                end = time.time()
+                exp_logger.info(f"Testing Speed: {len(config['cameras'])/(end-start)} fps")
+                exp_logger.info(f"Testing Time: {end-start} s")
                 exp_logger.info("\n[ITER {}] Evaluating {}: SSIM = {}, PSNR = {}".format(iteration, config['name'], ssim_test, psnr_test))
 
         if exp_logger:
@@ -171,8 +177,9 @@ if __name__ == "__main__":
     parser.add_argument('--port', type=int, default=6009)
     parser.add_argument('--debug_from', type=int, default=-1)
     parser.add_argument('--detect_anomaly', action='store_true', default=False)
-    parser.add_argument("--test_iterations", nargs="+", type=int, default=[100, 7_000, 30_000])
-    parser.add_argument("--save_iterations", nargs="+", type=int, default=[100, 7_000, 30_000])
+    parser.add_argument('--config', type=str, default='config/chest.yaml', help='Path to the configuration file')
+    parser.add_argument("--test_iterations", nargs="+", type=int, default=[100, 2_000, 20_000])
+    parser.add_argument("--save_iterations", nargs="+", type=int, default=[20_000,])
     parser.add_argument("--quiet", action="store_true")
     parser.add_argument("--checkpoint_iterations", nargs="+", type=int, default=[])
     parser.add_argument("--start_checkpoint", type=str, default = None)
@@ -189,6 +196,12 @@ if __name__ == "__main__":
 
 
     torch.autograd.set_detect_anomaly(args.detect_anomaly)
+
+    with open(args.config, 'r') as f:
+        config = yaml.safe_load(f)
+    
+    for key, value in config.items():
+        setattr(args, key, value)
 
     training(lp.extract(args), op.extract(args), pp.extract(args), args.test_iterations, args.save_iterations, args.checkpoint_iterations, args.start_checkpoint, args.debug_from)
 
