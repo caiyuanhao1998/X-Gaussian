@@ -88,15 +88,12 @@ SET DISTUTILS_USE_SDK=1 # Windows only
 conda env create --file environment.yml
 conda activate x_gaussian
 
-# Then put our rasterizer package into the diff-gaussian-rasterization
+# Use our X-ray rasterizer package to replace the original RGB rasterizer
+rm -rf submodules/diff-gaussian-rasterization/cuda_rasterizer
 mv cuda_rasterizer submodules/diff-gaussian-rasterization/
 
 # re-install the diff-gaussian-rasterization package
-cd submodules
-pip install diff-gaussian-rasterization
-
-# back to the main folder
-cd ..
+pip install submodules/diff-gaussian-rasterization
 ```
 
 &nbsp;
