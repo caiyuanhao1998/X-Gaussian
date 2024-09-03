@@ -5,6 +5,7 @@
 <p align="center"> <img src="3d_demo/logo.png" width="110px"> </p>
 
 [![arXiv](https://img.shields.io/badge/paper-arxiv-179bd3)](https://arxiv.org/abs/2403.04116)
+[![zhihu](https://img.shields.io/badge/知乎-解读-179bd3)](https://zhuanlan.zhihu.com/p/717744222)
 [![Youtube](https://img.shields.io/badge/video-youtube-red)](https://www.youtube.com/watch?v=v6FESb3SkJg&t=28s)
 
 <h2> Radiative Gaussian Splatting for Efficient X-ray Novel View Synthesis </h2> 
