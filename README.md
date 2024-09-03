@@ -102,11 +102,11 @@ pip install submodules/diff-gaussian-rasterization
 
 
 ## 2. Prepare Dataset
-Download our processed datasets from [Google drive](https://drive.google.com/drive/folders/1SlneuSGkhk0nvwPjxxnpBCO59XhjGGJX?usp=sharing) or [Baidu disk](https://pan.baidu.com/s/18zc6jHeNvoUNAF6pUaL9eQ?pwd=cyh2). Then put the downloaded datasets into the folder `data/` as
+Download our processed datasets from [Google drive](https://drive.google.com/drive/folders/1W46wpeN7byWLC0f3cGIvoT_xbwT1b7gZ?usp=sharing) or [Baidu disk](https://pan.baidu.com/s/1WrYhxFb8Y-RwS4PCx_LRhA?pwd=cyh2). Then put the downloaded datasets into the folder `data/` as
 
 ```sh
   |--data
-      # The first five datasets are used in the our paper
+      # The first five datasets are used in our paper
       |--chest_50.pickle
       |--abdomen_50.pickle
       |--foot_50.pickle
@@ -125,7 +125,12 @@ Download our processed datasets from [Google drive](https://drive.google.com/dri
       |--jaw_50.pickle
 ```
 
-`Note:` The first five datasets are used to do experiments in our paper. The rest datasets are from [the X3D benchmark](https://github.com/caiyuanhao1998/SAX-NeRF/).
+`Note:` The first five datasets are used to do experiments in our paper. The rest datasets are from [the X3D benchmark](https://github.com/caiyuanhao1998/SAX-NeRF/). Please also note that the pickle data used by X-Gaussian is dumped/read by pickle protocol 4, which is supported by python < 3.8. The original X3D data is processed by pickle protocol 5, which is supported by python >= 3.8. I have re-dumped the pickle data from the original X3D datasets to make sure you can run our code without extra effort. If you want to re-dump the pickle data, please run
+
+```shell
+python pickle_redump.py
+```
+
 
 &nbsp;
 
