@@ -9,7 +9,7 @@
 [![Youtube](https://img.shields.io/badge/video-youtube-red)](https://www.youtube.com/watch?v=v6FESb3SkJg&t=28s)
 [![AK](https://img.shields.io/badge/media-AK-green)](https://x.com/_akhaliq/status/1765929288044290253?s=46)
 [![MrNeRF](https://img.shields.io/badge/media-MrNeRF-green)](https://x.com/janusch_patas/status/1766446189749150126?s=46)
-[![RF](https://img.shields.io/badge/media-Radiance Fields-green)](https://radiancefields.com/x-gaussian-radiance-meets-radiation)
+[![RF](https://img.shields.io/badge/media-Radiance_Fields-green)](https://radiancefields.com/x-gaussian-radiance-meets-radiation)
 
 <h2> Radiative Gaussian Splatting for Efficient X-ray Novel View Synthesis </h2> 
 
