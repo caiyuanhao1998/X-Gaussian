@@ -217,6 +217,14 @@ python point_cloud_vis.py
   booktitle={CVPR},
   year={2024}
 }
+
+# R2-Gaussian
+@inproceedings{r2_gaussian,
+  title={R2-Gaussian: Rectifying Radiative Gaussian Splatting for Tomographic Reconstruction},
+  author={Ruyi Zha and Tao Jun Lin and Yuanhao Cai and Jiwen Cao and Yanhao Zhang and Hongdong Li},
+  booktitle={NeurIPS},
+  year={2024}
+}
 ```
 
 &nbsp;
