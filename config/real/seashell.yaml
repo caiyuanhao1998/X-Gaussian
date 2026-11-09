@@ -1,5 +1,5 @@
-source_path: data/real/walnut
-model_path: output/real_walnut
+source_path: data/real/seashell
+model_path: output/real/seashell
 iterations: 30000
 position_lr_init: 0.0002
 position_lr_final: 2.0e-05

@@ -1,5 +1,5 @@
-source_path: data/head_50.pickle
-model_path: output/head
+source_path: data/real/pine
+model_path: output/real/pine
 iterations: 30000
 position_lr_init: 0.0002
 position_lr_final: 2.0e-05

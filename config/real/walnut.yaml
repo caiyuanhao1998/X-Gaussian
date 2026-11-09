@@ -1,5 +1,5 @@
-source_path: data/foot_50.pickle
-model_path: output/foot
+source_path: data/real/walnut
+model_path: output/real/walnut
 iterations: 30000
 position_lr_init: 0.0002
 position_lr_final: 2.0e-05

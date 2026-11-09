@@ -96,7 +96,7 @@ def main():
     from xct.refinement import project_scales
     from train import initialize
     parser=argparse.ArgumentParser(description='Generate training-only FDK and Gaussian initialization')
-    parser.add_argument('--config',default='config/chest.yaml')
+    parser.add_argument('--config',default='config/synthetic/chest.yaml')
     parser.add_argument('--source_path')
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args()

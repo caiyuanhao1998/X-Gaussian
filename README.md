@@ -156,12 +156,13 @@ The processed data files are placed in `data/`:
 
 ```text
 |--data
-      # The first five datasets are used in our paper
-      |--chest_50.pickle
-      |--abdomen_50.pickle
-      |--foot_50.pickle
-      |--head_50.pickle
-      |--pancreas_50.pickle
+      |--synthetic
+            # The first five datasets are used in our paper
+            |--chest_50.pickle
+            |--abdomen_50.pickle
+            |--foot_50.pickle
+            |--head_50.pickle
+            |--pancreas_50.pickle
       |--real
             |--pine
             |--seashell
@@ -188,17 +189,38 @@ git clone https://huggingface.co/CaiYuanhao/X-Gaussian pretrained
 ### 2D Projection Rendering
 
 ```shell
-python render.py -m pretrained/chest --mode 2d
+# synthetic scenes
+python render.py -m pretrained/synthetic/chest --mode 2d
+python render.py -m pretrained/synthetic/abdomen --mode 2d
+python render.py -m pretrained/synthetic/foot --mode 2d
+python render.py -m pretrained/synthetic/head --mode 2d
+python render.py -m pretrained/synthetic/pancreas --mode 2d
+
+# real scenes
+python render.py -m pretrained/real/pine --mode 2d
+python render.py -m pretrained/real/seashell --mode 2d
+python render.py -m pretrained/real/walnut --mode 2d
 ```
 
-Renders test cameras to `pretrained/chest/projections_test/` (raw NPY and PNG previews).
+Renders test cameras to each model folder’s `projections_test/` (raw NPY and PNG previews).
 
 ### 3D Reconstruction Testing
 
 ```shell
-python render.py -m pretrained/chest --mode 3d \
-  --output pretrained/chest/volume.npy
+# synthetic scenes
+python render.py -m pretrained/synthetic/chest --mode 3d
+python render.py -m pretrained/synthetic/abdomen --mode 3d
+python render.py -m pretrained/synthetic/foot --mode 3d
+python render.py -m pretrained/synthetic/head --mode 3d
+python render.py -m pretrained/synthetic/pancreas --mode 3d
+
+# real scenes
+python render.py -m pretrained/real/pine --mode 3d
+python render.py -m pretrained/real/seashell --mode 3d
+python render.py -m pretrained/real/walnut --mode 3d
 ```
+
+Saves `volume.npy` in each model folder. Use `--output` to select another path.
 
 The same trained Gaussians directly define the CT volume:
 
@@ -217,42 +239,30 @@ without projections or CT truth. The saved scanner resolution and extent are use
 `--center` and `--size` override them. Both modes load the latest
 checkpoint by default (`--iteration` selects another checkpoint).
 
-### Real Data Testing
-
-```shell
-python render.py -m pretrained/real_pine --mode 2d
-python render.py -m pretrained/real_pine --mode 3d \
-  --output pretrained/real_pine/volume.npy
-```
-
-Replace `real_pine` with `real_seashell` or `real_walnut` for the other real scans.
-
 ## 4. Training
 
 ```shell
-python train.py --config config/chest.yaml
+# synthetic scenes
+python train.py --config config/synthetic/chest.yaml
+python train.py --config config/synthetic/abdomen.yaml
+python train.py --config config/synthetic/foot.yaml
+python train.py --config config/synthetic/head.yaml
+python train.py --config config/synthetic/pancreas.yaml
+
+# real scenes
+python train.py --config config/real/pine.yaml
+python train.py --config config/real/seashell.yaml
+python train.py --config config/real/walnut.yaml
 ```
 
-Training saves checkpoints to `output/chest/`. It reuses cached initialization when available;
-otherwise it computes and saves FDK initialization automatically.
+Checkpoints are saved to `output/synthetic/<scene>/` or `output/real/<scene>/`.
+Training reuses cached initialization when available; otherwise it computes and
+saves FDK initialization automatically from the training projections.
 
 Training jointly optimizes one Gaussian field for 2D projection rendering and 3D
 reconstruction, using projection loss, 3D TV, and volume-ray consistency. The default
 recipe runs 30,000 base steps and 1,000 refinement steps. CT ground truth is not used
 for training. The original Gaussian attributes are retained.
-
-### Real Data Training
-
-```shell
-python train.py --config config/real_pine.yaml
-python train.py --config config/real_seashell.yaml
-python train.py --config config/real_walnut.yaml
-```
-
-Models are saved to `output/real_pine/`, `output/real_seashell/`, and
-`output/real_walnut/`. Training reuses initialization when present; otherwise it
-computes and caches FDK from the training projections. The full-view FDK
-pseudo-reference and held-out projections are used only for evaluation.
 
 ## Citation
 ```sh

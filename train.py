@@ -152,7 +152,7 @@ def refine_volume(data, args, out, model, writer):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--config', default='config/chest.yaml')
+    parser.add_argument('--config', default='config/synthetic/chest.yaml')
     parser.add_argument('-s', '--source_path')
     parser.add_argument('-m', '--model_path')
     parser.add_argument('--iterations', type=int, help='Base joint-training steps')

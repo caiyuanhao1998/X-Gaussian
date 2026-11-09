@@ -1,5 +1,5 @@
-source_path: data/real/seashell
-model_path: output/real_seashell
+source_path: data/synthetic/abdomen_50.pickle
+model_path: output/synthetic/abdomen
 iterations: 30000
 position_lr_init: 0.0002
 position_lr_final: 2.0e-05

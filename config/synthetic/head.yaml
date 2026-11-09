@@ -1,5 +1,5 @@
-source_path: data/abdomen_50.pickle
-model_path: output/abdomen
+source_path: data/synthetic/head_50.pickle
+model_path: output/synthetic/head
 iterations: 30000
 position_lr_init: 0.0002
 position_lr_final: 2.0e-05

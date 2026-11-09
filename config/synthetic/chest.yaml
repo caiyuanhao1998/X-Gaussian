@@ -1,5 +1,5 @@
-source_path: data/pancreas_50.pickle
-model_path: output/pancreas
+source_path: data/synthetic/chest_50.pickle
+model_path: output/synthetic/chest
 iterations: 30000
 position_lr_init: 0.0002
 position_lr_final: 2.0e-05
