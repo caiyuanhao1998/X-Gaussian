@@ -85,7 +85,7 @@ Results on the original five datasets without downsampling, using 50 training pr
 
 
 <details close>
-<summary><b>Real Data</b></summary>
+<summary><b>Real Data 3D CT Reconstruction</b></summary>
 
 Results on three real FIPS scans with 50 training and 100 held-out projections,
 560 × 560 detector images, and a 256³ reconstruction grid. Each run uses
