@@ -4,12 +4,14 @@
 
 <p align="center"> <img src="3d_demo/logo.png" width="110px"> </p>
 
-[![arXiv](https://img.shields.io/badge/paper-arxiv-179bd3)](https://arxiv.org/abs/2403.04116)
-[![zhihu](https://img.shields.io/badge/知乎-解读-179bd3)](https://zhuanlan.zhihu.com/p/717744222)
-[![Youtube](https://img.shields.io/badge/video-youtube-red)](https://www.youtube.com/watch?v=v6FESb3SkJg&t=28s)
+[![arXiv](https://img.shields.io/badge/arXiv-2403.04116-b31b1b)](https://arxiv.org/abs/2403.04116)
+[![知乎](https://img.shields.io/badge/知乎-中文解读-0084ff)](https://zhuanlan.zhihu.com/p/717744222)
+[![Video](https://img.shields.io/badge/YouTube-Video-ff0000?logo=youtube)](https://www.youtube.com/watch?v=v6FESb3SkJg&t=28s)
 [![AK](https://img.shields.io/badge/media-AK-green)](https://x.com/_akhaliq/status/1765929288044290253?s=46)
 [![MrNeRF](https://img.shields.io/badge/media-MrNeRF-green)](https://x.com/janusch_patas/status/1766446189749150126?s=46)
 [![RF](https://img.shields.io/badge/media-Radiance_Fields-green)](https://radiancefields.com/x-gaussian-radiance-meets-radiation)
+[![Hugging Face Dataset](https://img.shields.io/badge/Hugging%20Face-Dataset-yellow?logo=huggingface&logoColor=black)](https://huggingface.co/datasets/CaiYuanhao/X-Gaussian)
+[![Hugging Face Model](https://img.shields.io/badge/Hugging%20Face-Model-yellow?logo=huggingface&logoColor=black)](https://huggingface.co/CaiYuanhao/X-Gaussian)
 
 <h2> Radiative Gaussian Splatting for Efficient X-ray Novel View Synthesis </h2> 
 
@@ -39,6 +41,7 @@ This is the official implementation of our ECCV 2024 paper "Radiative Gaussian S
 
 
 ### News
+- **2026.11.09 :** We released the [datasets](https://huggingface.co/datasets/CaiYuanhao/X-Gaussian) and [pretrained models](https://huggingface.co/CaiYuanhao/X-Gaussian) on Hugging Face. 🤗
 - **2026.11.08 :** We added direct 3D reconstruction.
 - **2025.06.25 :** Our new work [X2-Gaussian](https://arxiv.org/abs/2503.21779) for dynamic human chest breathing CT reconstruction has been accepted by ICCV 2025. Congrats to [Weihao](https://yuyouxixi.github.io/). Code and models will be released at [this repo](https://github.com/yuyouxixi/x2-gaussian).  🚀
 - **2024.09.01 :** Code, models, and training logs have been released. Welcome to have a try 😆
@@ -114,7 +117,15 @@ bash install.sh
 
 ## 2. Dataset
 
-Download the original five CT datasets from [Google Drive](https://drive.google.com/drive/folders/1W46wpeN7byWLC0f3cGIvoT_xbwT1b7gZ?usp=sharing):
+Download the original five CT datasets from [Hugging Face](https://huggingface.co/datasets/CaiYuanhao/X-Gaussian) or [Google Drive](https://drive.google.com/drive/folders/1W46wpeN7byWLC0f3cGIvoT_xbwT1b7gZ?usp=sharing).
+With [Git LFS](https://git-lfs.com/) installed, run from the project root:
+
+```shell
+git lfs install
+git clone https://huggingface.co/datasets/CaiYuanhao/X-Gaussian data
+```
+
+The processed data files are placed in `data/`:
 
 ```text
 |--data
@@ -129,34 +140,28 @@ Download the original five CT datasets from [Google Drive](https://drive.google.
 Training reads these files directly and initializes from training projections.
 Datasets and outputs can be stored elsewhere and symlinked into `data/` and `output/`.
 
-## 3. Training
+## 3. Testing
+
+Download the pretrained models from [Hugging Face](https://huggingface.co/CaiYuanhao/X-Gaussian) using Git LFS:
 
 ```shell
-python train.py --config config/chest.yaml
+git lfs install
+git clone https://huggingface.co/CaiYuanhao/X-Gaussian pretrained
 ```
-
-Training reuses cached initialization when available; otherwise it computes and saves FDK initialization automatically.
-
-Training jointly optimizes one Gaussian field for 2D projection rendering and 3D
-reconstruction, using projection loss, 3D TV, and volume-ray consistency. The default
-recipe runs 30,000 base steps and 1,000 refinement steps. CT ground truth is not used
-for training. The original Gaussian attributes are retained.
-
-## 4. Testing
 
 ### 2D Projection Rendering
 
 ```shell
-python render.py -m output/chest --mode 2d
+python render.py -m pretrained/chest --mode 2d
 ```
 
-Renders test cameras to `output/chest/projections_test/` (raw NPY and PNG previews).
+Renders test cameras to `pretrained/chest/projections_test/` (raw NPY and PNG previews).
 
 ### 3D Reconstruction Testing
 
 ```shell
-python render.py -m output/chest --mode 3d \
-  --output output/chest/volume.npy
+python render.py -m pretrained/chest --mode 3d \
+  --output pretrained/chest/volume.npy
 ```
 
 The same trained Gaussians directly define the CT volume:
@@ -175,6 +180,20 @@ voxel centers; no extra learned density or voxel parameters are introduced.
 without projections or CT truth. The saved scanner resolution and extent are used by default; `--resolution`,
 `--center` and `--size` override them. Both modes load the latest
 checkpoint by default (`--iteration` selects another checkpoint).
+
+## 4. Training
+
+```shell
+python train.py --config config/chest.yaml
+```
+
+Training saves checkpoints to `output/chest/`. It reuses cached initialization when available;
+otherwise it computes and saves FDK initialization automatically.
+
+Training jointly optimizes one Gaussian field for 2D projection rendering and 3D
+reconstruction, using projection loss, 3D TV, and volume-ray consistency. The default
+recipe runs 30,000 base steps and 1,000 refinement steps. CT ground truth is not used
+for training. The original Gaussian attributes are retained.
 
 ## Citation
 ```sh
