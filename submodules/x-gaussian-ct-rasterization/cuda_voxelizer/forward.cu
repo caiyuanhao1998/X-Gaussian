@@ -142,6 +142,26 @@ __global__ void preprocessCUDA(int P,
 		ceil((3.f * max_scale) / dVoxel_z)
 	};
 
+	// Discard only contributions already rejected by renderCUDA's alpha threshold.
+	// A conservative FP32 error bound keeps the original field for thin Gaussians.
+	const float opacity = opacities[idx];
+	if (opacity < 0.000001f)
+		return;
+	const double b = inv_b, c = inv_c, e = inv_e;
+	const double a = inv_a - 8e-6 * (fabs((double)inv_a) + fabs(b) + fabs(c));
+	const double d = inv_d - 8e-6 * (fabs((double)inv_d) + fabs(b) + fabs(e));
+	const double f = inv_f - 8e-6 * (fabs((double)inv_f) + fabs(c) + fabs(e));
+	const double bound_det = a * d * f + 2 * b * c * e - a * e * e - d * c * c - f * b * b;
+	if (a > 0 && a * d > b * b && bound_det > 0 && isfinite(bound_det))
+	{
+		const double cutoff = 2 * log((double)opacity / (double)0.000001f) + 0.0001;
+		// These inverse diagonal entries bound each coordinate of the support ellipsoid.
+		// Retain the old tile bounds whenever they are tighter; pad by one voxel.
+		my_radius.x = fminf(my_radius.x, ceil(sqrt(cutoff * (d * f - e * e) / bound_det)) + 1);
+		my_radius.y = fminf(my_radius.y, ceil(sqrt(cutoff * (a * f - c * c) / bound_det)) + 1);
+		my_radius.z = fminf(my_radius.z, ceil(sqrt(cutoff * (a * d - b * b) / bound_det)) + 1);
+	}
+
 	float3 point_vol = {(p_orig.x - center_x + sVoxel_x / 2) / dVoxel_x,
 						(p_orig.y - center_y + sVoxel_y / 2) / dVoxel_y,
 						(p_orig.z - center_z + sVoxel_z / 2) / dVoxel_z};

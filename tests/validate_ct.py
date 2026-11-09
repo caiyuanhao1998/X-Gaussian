@@ -135,6 +135,59 @@ def check_fdk():
 
 
 
+def check_initialization_cache():
+    from unittest.mock import patch
+    points = np.array([[0., 0., 0., .1]], dtype=np.float32)
+    for folder_format in [False, True]:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root/'scene' if folder_format else root/'scene.pickle'
+            source.mkdir() if folder_format else source.touch()
+            data = CTData.__new__(CTData)
+            data.path, data.cache_dir = source, root/'output'
+            data.train, data.scanner = [], {}
+            with patch('xct.initialization.fdk_points', return_value=points) as fdk:
+                assert np.array_equal(data.initialization(), points)
+                fdk.assert_called_once()
+            with patch('xct.initialization.fdk_points', side_effect=AssertionError('Repeated FDK')):
+                assert np.array_equal(data.initialization(), points)
+                supplied = points * 2
+                path = source/'init_scene.npy' if folder_format else root/'init_scene.npy'
+                np.save(path, supplied)
+                assert np.array_equal(data.initialization(), supplied)
+    print('PASS automatic FDK and initialization cache for pickle and folder datasets', flush=True)
+
+
+def check_thin_gaussian():
+    from utils.general_utils import build_rotation
+    pc = single()
+    with torch.no_grad():
+        pc._scaling[0] = torch.tensor([.008, .08, .18], device='cuda').log()
+        pc._rotation[0] = torch.tensor([1., .2, -.3, .4], device='cuda')
+    volume = query(pc, [0, 0, 0], [97, 61, 79], [1.2]*3)['vol']
+    axes = [(torch.arange(n, device='cuda', dtype=torch.float64)+.5)*1.2/n-.6 for n in volume.shape]
+    xyz = torch.stack(torch.meshgrid(*axes, indexing='ij'), -1)
+    rotation = build_rotation(pc.get_rotation).double()[0]
+    covariance = rotation @ torch.diag(pc.get_scaling.double()[0]**2) @ rotation.T
+    reference = attenuation(pc).double().item()*torch.exp(-.5*torch.einsum('...i,ij,...j->...', xyz, covariance.inverse(), xyz))
+    interior = (xyz.abs().amax(-1) < .53) & (reference > 2e-6)
+    assert torch.allclose(volume[interior].double(), reference[interior], rtol=.002, atol=2e-6)
+    gradients = torch.autograd.grad(volume.square().mean(),
+        [pc._xyz, pc._features_dc, pc._features_rest, pc._opacity, pc._scaling, pc._rotation])
+    assert all(torch.isfinite(g).all() for g in gradients)
+    print('PASS thin rotated Gaussian retains above-threshold support and finite attribute gradients', flush=True)
+    with torch.no_grad():
+        pc._opacity.fill_(-30)
+    empty = query(pc, [0, 0, 0], [17]*3, [1.2]*3)['vol']
+    assert torch.count_nonzero(empty) == 0
+    gradients = torch.autograd.grad(empty.sum(),
+        [pc._xyz, pc._features_dc, pc._features_rest, pc._opacity, pc._scaling, pc._rotation])
+    assert all(torch.count_nonzero(g) == 0 for g in gradients)
+    print('PASS all Gaussians below the voxel threshold give a zero field and zero gradients', flush=True)
+
+
 if __name__=='__main__':
     main()
     check_fdk()
+    check_initialization_cache()
+    check_thin_gaussian()

@@ -95,16 +95,16 @@ class CTData:
             path = self.path / ('init_' + self.path.name + '.npy')
         else:
             path = self.path.with_name('init_' + self.path.stem + '.npy')
+        if not path.exists():
+            if self.cache_dir is None:
+                raise ValueError('Set cache_dir to save the training-only FDK initialization')
+            path = self.cache_dir / 'initialization.npy'
             if not path.exists():
-                if self.cache_dir is None:
-                    raise ValueError('Set cache_dir to save the training-only FDK initialization')
-                path = self.cache_dir / 'initialization.npy'
-                if not path.exists():
-                    from xct.initialization import fdk_points
-                    print('Initializing from training projections at original CT resolution...', flush=True)
-                    points = fdk_points(self.train, self.scanner, volume_path=self.cache_dir/'fdk_volume.npy')
-                    path.parent.mkdir(parents=True, exist_ok=True)
-                    np.save(path, points)
+                from xct.initialization import fdk_points
+                print('Initializing from training projections at original CT resolution...', flush=True)
+                points = fdk_points(self.train, self.scanner, volume_path=self.cache_dir/'fdk_volume.npy')
+                path.parent.mkdir(parents=True, exist_ok=True)
+                np.save(path, points)
         points = np.load(path)
         if points.ndim != 2 or points.shape[1] != 4 or not np.isfinite(points).all():
             raise ValueError('Invalid initialization')
