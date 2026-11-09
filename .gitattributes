@@ -1,0 +1,4 @@
+
+# Preserve vendored header/license formatting and collapse it in GitHub diffs.
+submodules/x-gaussian-ct-rasterization/third_party/** linguist-vendored -whitespace
+submodules/x-gaussian-ct-rasterization/LICENSE.md -whitespace
