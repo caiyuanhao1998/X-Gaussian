@@ -6,17 +6,21 @@ channels:
 dependencies:
 - python=3.9
 - pip
+- setuptools=68.2.2
+- wheel
+- gxx_linux-64=11
 - pytorch=2.1.2
 - torchvision=0.16.2
 - pytorch-cuda=11.8
+- fsspec
 - numpy=1.24.4
 - scipy=1.10.1
-- matplotlib=3.7.5
 - pillow
 - pyyaml
 - tqdm
 - imageio
 - ninja
 - pip:
+  - matplotlib==3.7.5
   - plyfile==1.0.3
   - opencv-python==4.10.0.84

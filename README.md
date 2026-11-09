@@ -101,8 +101,8 @@ The coordinate system in circular cone-beam X-ray scanning follows the OpenCV st
 
 ## 1. Environment
 
-Use Linux, Python 3.9, PyTorch 2.1.2 and CUDA 11.8 (`nvcc` and a compatible C++ compiler).
-One environment supports both 2D projection rendering and 3D CT reconstruction.
+Use Linux with a CUDA 11.8 toolkit (`nvcc`). The environment installs Python 3.9,
+PyTorch 2.1.2 and GCC 11 for both 2D projection rendering and 3D CT reconstruction.
 
 ```shell
 git clone --recursive https://github.com/caiyuanhao1998/X-Gaussian.git
@@ -117,12 +117,13 @@ bash install.sh
 Download the original five CT datasets from [Google Drive](https://drive.google.com/drive/folders/1W46wpeN7byWLC0f3cGIvoT_xbwT1b7gZ?usp=sharing):
 
 ```text
-data/
-  chest_50.pickle
-  abdomen_50.pickle
-  foot_50.pickle
-  head_50.pickle
-  pancreas_50.pickle
+|--data
+      # The first five datasets are used in our paper
+      |--chest_50.pickle
+      |--abdomen_50.pickle
+      |--foot_50.pickle
+      |--head_50.pickle
+      |--pancreas_50.pickle
 ```
 
 Training reads these files directly and initializes from training projections.
@@ -131,7 +132,7 @@ Datasets and outputs can be stored elsewhere and symlinked into `data/` and `out
 ## 3. Training
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 python train.py --config config/chest.yaml
+python train.py --config config/chest.yaml
 ```
 
 Training reuses cached initialization when available; otherwise it computes and saves FDK initialization automatically.
@@ -146,7 +147,7 @@ for training. The original Gaussian attributes are retained.
 ### 2D Projection Rendering
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 python render.py -m output/chest --mode 2d
+python render.py -m output/chest --mode 2d
 ```
 
 Renders test cameras to `output/chest/projections_test/` (raw NPY and PNG previews).
@@ -154,7 +155,7 @@ Renders test cameras to `output/chest/projections_test/` (raw NPY and PNG previe
 ### 3D Reconstruction Testing
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 python render.py -m output/chest --mode 3d \
+python render.py -m output/chest --mode 3d \
   --output output/chest/volume.npy
 ```
 
