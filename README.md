@@ -40,6 +40,7 @@ This is the official implementation of our ECCV 2024 paper "Radiative Gaussian S
 
 
 ### News
+- **2026.11.09 :** We added real-data reconstruction on Pine, Seashell, and Walnut, with [data](https://huggingface.co/datasets/CaiYuanhao/X-Gaussian/tree/main/real) and [pretrained models](https://huggingface.co/CaiYuanhao/X-Gaussian) available on Hugging Face.
 - **2026.11.09 :** We released the [datasets](https://huggingface.co/datasets/CaiYuanhao/X-Gaussian) and [pretrained models](https://huggingface.co/CaiYuanhao/X-Gaussian) on Hugging Face. 🤗
 - **2026.11.08 :** We added direct 3D reconstruction.
 - **2025.06.25 :** Our new work [X2-Gaussian](https://arxiv.org/abs/2503.21779) for dynamic human chest breathing CT reconstruction has been accepted by ICCV 2025. Congrats to [Weihao](https://yuyouxixi.github.io/). Code and models will be released at [this repo](https://github.com/yuyouxixi/x2-gaussian).  🚀
@@ -84,6 +85,32 @@ Results on the original five datasets without downsampling, using 50 training pr
 
 
 <details close>
+<summary><b>Real Data</b></summary>
+
+Results on three real FIPS scans with 50 training and 100 held-out projections,
+560 × 560 detector images, and a 256³ reconstruction grid. Each run uses
+30,000 training steps and 1,000 refinement steps, without further downsampling.
+
+| Scene | 2D PSNR (dB) | 2D SSIM | 3D PSNR vs. FDK (dB) | 3D SSIM vs. FDK |
+|:--|--:|--:|--:|--:|
+| Pine | 39.18 | 0.9777 | 37.79 | 0.9399 |
+| Seashell | 32.54 | 0.9749 | 42.62 | 0.9593 |
+| Walnut | 34.24 | 0.9140 | 30.32 | 0.6810 |
+
+2D metrics average the 100 held-out measured projections, with each image
+normalized by its own maximum. The 3D reference is **full-view FDK**, not measured
+CT ground truth; 3D metrics use a fixed range of 1 without intensity correction.
+The pseudo-reference and test views are not used for training or initialization.
+
+![Real X-ray rendering and direct CT reconstruction](fig/real_data.png)
+
+Left to right: measured X-ray, rendered X-ray, full-view FDK pseudo-reference,
+and X-Gaussian CT. CT previews use the same fixed 0–1 intensity range.
+
+</details>
+
+
+<details close>
 <summary><b>Assistant CT Reconstruction</b></summary>
 
 ![results3](/fig/ct_1.png)
@@ -116,7 +143,8 @@ bash install.sh
 
 ## 2. Dataset
 
-Download the original five CT datasets from [Hugging Face](https://huggingface.co/datasets/CaiYuanhao/X-Gaussian) or [Google Drive](https://drive.google.com/drive/folders/1W46wpeN7byWLC0f3cGIvoT_xbwT1b7gZ?usp=sharing).
+Download the original five CT datasets and three real scans from [Hugging Face](https://huggingface.co/datasets/CaiYuanhao/X-Gaussian).
+The original five datasets are also available on [Google Drive](https://drive.google.com/drive/folders/1W46wpeN7byWLC0f3cGIvoT_xbwT1b7gZ?usp=sharing).
 With [Git LFS](https://git-lfs.com/) installed, run from the project root:
 
 ```shell
@@ -134,10 +162,19 @@ The processed data files are placed in `data/`:
       |--foot_50.pickle
       |--head_50.pickle
       |--pancreas_50.pickle
+      |--real
+            |--pine
+            |--seashell
+            |--walnut
 ```
 
 Training reads these files directly and initializes from training projections.
 Datasets and outputs can be stored elsewhere and symlinked into `data/` and `output/`.
+
+Each real scene contains `meta_data.json`, 50 training and 100 test projections at
+560 × 560, a 256³ full-view FDK pseudo-reference, and training-only initialization.
+We preserve the released processed resolution without further downsampling.
+See the [real-data sources and format](https://huggingface.co/datasets/CaiYuanhao/X-Gaussian/blob/main/real/README.md).
 
 ## 3. Testing
 
@@ -180,6 +217,16 @@ without projections or CT truth. The saved scanner resolution and extent are use
 `--center` and `--size` override them. Both modes load the latest
 checkpoint by default (`--iteration` selects another checkpoint).
 
+### Real Data Testing
+
+```shell
+python render.py -m pretrained/real_pine --mode 2d
+python render.py -m pretrained/real_pine --mode 3d \
+  --output pretrained/real_pine/volume.npy
+```
+
+Replace `real_pine` with `real_seashell` or `real_walnut` for the other real scans.
+
 ## 4. Training
 
 ```shell
@@ -193,6 +240,19 @@ Training jointly optimizes one Gaussian field for 2D projection rendering and 3D
 reconstruction, using projection loss, 3D TV, and volume-ray consistency. The default
 recipe runs 30,000 base steps and 1,000 refinement steps. CT ground truth is not used
 for training. The original Gaussian attributes are retained.
+
+### Real Data Training
+
+```shell
+python train.py --config config/real_pine.yaml
+python train.py --config config/real_seashell.yaml
+python train.py --config config/real_walnut.yaml
+```
+
+Models are saved to `output/real_pine/`, `output/real_seashell/`, and
+`output/real_walnut/`. Training reuses initialization when present; otherwise it
+computes and caches FDK from the training projections. The full-view FDK
+pseudo-reference and held-out projections are used only for evaluation.
 
 ## Citation
 ```sh
