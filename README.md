@@ -41,7 +41,6 @@ This is the official implementation of our ECCV 2024 paper "Radiative Gaussian S
 ### News
 - **2026.11.08 :** We added direct 3D reconstruction.
 - **2025.06.25 :** Our new work [X2-Gaussian](https://arxiv.org/abs/2503.21779) for dynamic human chest breathing CT reconstruction has been accepted by ICCV 2025. Congrats to [Weihao](https://yuyouxixi.github.io/). Code and models will be released at [this repo](https://github.com/yuyouxixi/x2-gaussian).  🚀
-- **2024.09.25 :** Our new work [R2-Gaussian](https://arxiv.org/abs/2405.20693v1) has been accepted by NeurIPS 2024. Congrats to [Ruyi](https://ruyi-zha.github.io/). Code and model are  released at [this repo](https://github.com/Ruyi-Zha/r2_gaussian). 💫 
 - **2024.09.01 :** Code, models, and training logs have been released. Welcome to have a try 😆
 - **2024.07.01 :** Our X-Gaussian has been accepted by ECCV 2024! Code will be released before the start date of the conference (2024.09.29). Stay tuned. 🚀
 - **2024.06.03 :** Code for traditional methods has been released at [SAX-NeRF](https://github.com/caiyuanhao1998/SAX-NeRF). ✨
@@ -95,22 +94,46 @@ bash install.sh
 
 ## 2. Dataset
 
-Use the cone-beam NeRF-format datasets and FDK initialization from
-[R2-Gaussian](https://github.com/Ruyi-Zha/r2_gaussian). For teapot:
+Download the original five CT datasets from [Google Drive](https://drive.google.com/drive/folders/1W46wpeN7byWLC0f3cGIvoT_xbwT1b7gZ?usp=sharing):
 
 ```text
-data/2_teapot_cone/
-  meta_data.json
-  init_2_teapot_cone.npy
-  ... projection and volume files referenced by meta_data.json
+data/
+  chest_50.pickle
+  abdomen_50.pickle
+  foot_50.pickle
+  head_50.pickle
+  pancreas_50.pickle
 ```
 
+Training reads these files directly and initializes from training projections.
 Datasets and outputs can be stored elsewhere and symlinked into `data/` and `output/`.
 
-## 3. Training
+## 3. Initialization
+
+Training automatically initializes from training projections using FDK (Ram-Lak), following
+[SAX-NeRF](https://github.com/caiyuanhao1998/SAX-NeRF/blob/master/eval_traditional.py)'s scanner conventions.
+To generate and save the initialization separately:
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 python train.py --config config/teapot.yaml
+CUDA_VISIBLE_DEVICES=0 python -m xct.initialization --config config/chest.yaml \
+  --output output/chest_init
+```
+
+This saves `fdk_volume.npy`, `initialization.npy` (xyz and density),
+`initial_gaussians.ply`, and `initialization.json` at the original resolution.
+Default training also saves these files in its output folder.
+
+## 4. Training
+
+```shell
+CUDA_VISIBLE_DEVICES=0 python train.py --config config/chest.yaml
+```
+
+To reuse a saved initialization:
+
+```shell
+CUDA_VISIBLE_DEVICES=0 python train.py --config config/chest.yaml \
+  --init_path output/chest_init/initialization.npy --model_path output/chest_reuse
 ```
 
 Training jointly optimizes one Gaussian field for 2D projection rendering and 3D
@@ -118,21 +141,21 @@ reconstruction, using projection loss, 3D TV, and volume-ray consistency. The de
 recipe runs 30,000 base steps and 1,000 refinement steps. CT ground truth is not used
 for training. The original Gaussian attributes are retained.
 
-## 4. Testing
+## 5. Testing
 
 ### 2D Projection Rendering
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 python render.py -m output/teapot --mode 2d
+CUDA_VISIBLE_DEVICES=0 python render.py -m output/chest --mode 2d
 ```
 
-Renders test cameras to `output/teapot/projections_test/` (raw NPY and PNG previews).
+Renders test cameras to `output/chest/projections_test/` (raw NPY and PNG previews).
 
 ### 3D Reconstruction Testing
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 python render.py -m output/teapot --mode 3d \
-  --resolution 256 256 256 --output output/teapot/volume.npy
+CUDA_VISIBLE_DEVICES=0 python render.py -m output/chest --mode 3d \
+  --output output/chest/volume.npy
 ```
 
 The same trained Gaussians directly define the CT volume:
@@ -143,13 +166,13 @@ V(\mathbf x)=\sum_i\rho_i\exp\!\left[-\frac12
 $$
 
 Here $\rho_i=\sigma(o_i)\bar r_i$ combines the original opacity and positive radiative
-intensity, and $\Sigma_i=R(q_i)\operatorname{diag}(e^{2\mathbf a_i})R(q_i)^\top$
-uses the original log scales and rotations. Reconstruction samples this field at
+intensity, and $\Sigma_i=R(q_i)D_iR(q_i)^\top$
+uses the original rotations and squared scales in the diagonal matrix $D_i$. Reconstruction samples this field at
 voxel centers; no extra learned density or voxel parameters are introduced.
 
 3D mode also accepts a standalone CT-trained PLY via `-m path/to/point_cloud.ply`,
-without projections or CT truth. The default box is `[-1,1]^3` in normalized scanner
-coordinates; use `--center` and `--size` to change it. Both modes load the latest
+without projections or CT truth. The saved scanner resolution and extent are used by default; `--resolution`,
+`--center` and `--size` override them. Both modes load the latest
 checkpoint by default (`--iteration` selects another checkpoint).
 
 ## Citation
@@ -170,14 +193,6 @@ checkpoint by default (`--iteration` selects another checkpoint).
   year={2024}
 }
 
-# R2-Gaussian
-@inproceedings{r2_gaussian,
-  title={R2-Gaussian: Rectifying Radiative Gaussian Splatting for Tomographic Reconstruction},
-  author={Ruyi Zha and Tao Jun Lin and Yuanhao Cai and Jiwen Cao and Yanhao Zhang and Hongdong Li},
-  booktitle={NeurIPS},
-  year={2024}
-}
-
 # X2-Gaussian
 @inproceedings{x2_gaussian,
   title={X2-Gaussian: 4D Radiative Gaussian Splatting for Continuous-time Tomographic Reconstruction},
@@ -192,4 +207,4 @@ checkpoint by default (`--iteration` selects another checkpoint).
 
 ## Acknowledgement
 
-Our code and data are heavily borrowed from [SAX-NeRF](https://github.com/caiyuanhao1998/SAX-NeRF/) and [3DGS](https://github.com/graphdeco-inria/gaussian-splatting). The projection/volume CUDA backend is adapted from [R2-Gaussian](https://github.com/Ruyi-Zha/r2_gaussian), with upstream licenses preserved
+Our code and data are heavily borrowed from [SAX-NeRF](https://github.com/caiyuanhao1998/SAX-NeRF/) and [3DGS](https://github.com/graphdeco-inria/gaussian-splatting).

@@ -28,8 +28,12 @@ def seed_all(seed):
     torch.manual_seed(seed)
 
 
-def initialize(data, degree):
-    points = data.initialization()
+def initialize(data, degree, init_path=None):
+    points = np.load(init_path) if init_path else data.initialization()
+    if points.ndim!=2 or points.shape[1]!=4 or not np.isfinite(points).all() or np.any(points[:,3]<=0):
+        raise ValueError('Initialization must contain finite xyz and positive density columns')
+    if data.cache_dir is not None:
+        np.save(data.cache_dir/'initialization.npy',points)
     # Keep sigmoid opacity=0.1 and invert the radiative Softplus to match FDK density.
     colors = np.repeat(points[:, 3:4] / .1, 3, axis=1)
     colors = inverse_softplus(torch.from_numpy(colors)).numpy()
@@ -54,8 +58,11 @@ def tv_loss(pc, data, args):
 
 
 def train_base(data, args, out, writer):
-    pc = initialize(data, args.sh_degree)
+    pc = initialize(data, args.sh_degree, getattr(args,'init_path',None))
+    pc.volume_geometry = args.volume_geometry
     project_scales(pc, args)
+    from xct.initialization import save_initialization
+    save_initialization(pc, data, out, getattr(args,'init_path',None))
     pc.training_setup(args)
     stack = []
     progress = tqdm(range(1, args.iterations + 1), desc='Joint 2D/3D training')
@@ -145,12 +152,13 @@ def refine_volume(data, args, out, model, writer):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--config', default='config/teapot.yaml')
+    parser.add_argument('--config', default='config/chest.yaml')
     parser.add_argument('-s', '--source_path')
     parser.add_argument('-m', '--model_path')
     parser.add_argument('--iterations', type=int, help='Base joint-training steps')
     parser.add_argument('--refine_iterations', type=int, help='Joint volume-ray refinement steps')
     parser.add_argument('--seed', type=int)
+    parser.add_argument('--init_path',help='Reuse a saved initialization.npy')
     cli = parser.parse_args()
     config = yaml.safe_load(Path(cli.config).read_text())
     for key, value in vars(cli).items():
@@ -161,12 +169,13 @@ def main():
         parser.error('Training/checkpoint/ray counts must be positive; refinement steps may be zero')
     seed_all(args.seed)
     torch.cuda.set_device(0)
-    data = CTData(args.source_path, load_test=False)
     out = Path(args.model_path)
     out.mkdir(parents=True, exist_ok=True)
     if (out / 'config.json').exists():
         parser.error('Output already contains a run; choose another --model_path')
-    config.update(source_path=str(data.path), total_iterations=args.iterations + args.refine_iterations,
+    data = CTData(args.source_path, load_test=False, cache_dir=out)
+    args.volume_geometry = {k: np.asarray(data.scanner[k]).tolist() for k in ['nVoxel', 'sVoxel', 'offOrigin']}
+    config.update(volume_geometry=args.volume_geometry, source_path=str(data.path), total_iterations=args.iterations + args.refine_iterations,
                   activation='softplus', beta=1., backend='standard')
     (out / 'config.json').write_text(json.dumps(config, indent=2) + '\n')
     fields = ['iteration', 'stage', 'loss', 'l1', 'dssim', 'tv', 'ray', 'points']

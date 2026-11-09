@@ -270,9 +270,18 @@ renderCUDA(
 	const int last_contributor = inside ? n_contrib[voxel_id] : 0;
 
 	float dL_dpixel[C];
+	bool has_gradient = false;
 	if (inside)
 		for (int i = 0; i < C; i++)
-			dL_dpixel[i] = dL_dpixels[i *  nVoxel_x * nVoxel_y * nVoxel_z + voxel_id];
+		{
+			dL_dpixel[i] = dL_dpixels[i * nVoxel_x * nVoxel_y * nVoxel_z + voxel_id];
+			has_gradient |= dL_dpixel[i] != 0.0f;
+		}
+	// Sampled rays leave many voxel gradients exactly zero. These threads
+	// still fetch shared data when other voxels in their block need it.
+	done = done || !has_gradient;
+	if (__syncthreads_count(done) == BLOCK3D_SIZE)
+		return;
 
 	// Gradient of pixel coordinate w.r.t. normalized
 	// screen-space viewport corrdinates (-1 to 1)

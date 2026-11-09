@@ -41,7 +41,8 @@ def main():
     assert torch.allclose(vol[mask],ref[mask],rtol=2e-5,atol=2e-6),(vol-ref).abs().max()
     print('PASS analytic Gaussian voxel values',flush=True)
     from ct_phantom import phantom_data
-    data=CTData(args.source_path) if args.source_path else phantom_data()
+    temporary=tempfile.TemporaryDirectory()
+    data=CTData(args.source_path, cache_dir=temporary.name) if args.source_path else phantom_data()
     cam=data.train[0]
     projection=render(cam,pc)['render']
     expected=rho*math.sqrt(2*math.pi)*.18
@@ -76,6 +77,11 @@ def main():
         assert loaded.construct_list_of_attributes()==pc.construct_list_of_attributes()
         assert torch.allclose(attenuation(loaded),attenuation(pc))
     print('PASS original X PLY schema and round trip',flush=True)
+    zero_volume = query(pc,[0,0,0],[17]*3,[1.2]*3)['vol']
+    parameters=[pc._xyz,pc._features_dc,pc._features_rest,pc._opacity,pc._scaling,pc._rotation]
+    zero_gradients=torch.autograd.grad((zero_volume*0).sum(),parameters)
+    assert all(torch.isfinite(g).all() and torch.count_nonzero(g)==0 for g in zero_gradients)
+    print('PASS zero-gradient voxel blocks return zero for all original attributes',flush=True)
     if args.source_path:
         from train import initialize
         initialized=initialize(data,3)
@@ -85,4 +91,50 @@ def main():
 
 
 
-if __name__=='__main__':main()
+def check_fdk():
+    from ct_phantom import phantom_data
+    from xct.initialization import fdk_volume
+    data = phantom_data()
+    cam = data.train[0]
+    rows, cols = torch.meshgrid(torch.arange(512,device='cuda'), torch.arange(512,device='cuda'), indexing='ij')
+    local = torch.stack([(cols+.5-256)*4/512, (rows+.5-256)*4/512, torch.full_like(cols,7)],-1).float()
+    rotation = torch.linalg.inv(cam.world_view_transform.T)[:3,:3]
+    direction = local @ rotation.T
+    direction = direction / direction.norm(dim=-1,keepdim=True)
+    origin = cam.camera_center
+    closest_squared = origin.square().sum() - (direction*origin).sum(-1).square()
+    sigma=.18
+    projection = math.sqrt(2*math.pi)*sigma*torch.exp(-.5*closest_squared.clamp_min(0)/sigma**2)
+    for camera in data.train:camera.original_image=projection[None]
+    data.scanner['nVoxel']=np.array([64,48,40])
+    data.scanner['sVoxel']=np.array([2.,1.5,1.])
+    volume=fdk_volume(data.train,data.scanner)
+    axes=[(torch.arange(n,device='cuda')+.5)*size/n-size/2 for n,size in zip(volume.shape,data.scanner['sVoxel'])]
+    grid=torch.stack(torch.meshgrid(*axes,indexing='ij'),-1)
+    interior=grid.square().sum(-1)<.25**2
+    outside=grid.square().sum(-1)>.6**2
+    reference=torch.exp(-.5*grid.square().sum(-1)/sigma**2)
+    assert abs(float(volume[interior].mean()/reference[interior].mean())-1)<.04
+    assert float((volume-reference).square().mean().sqrt())<.01
+    assert float(volume[outside].abs().mean())<.02
+    print('PASS training-only FDK on an analytic Gaussian and non-cubic grid',flush=True)
+    import pickle
+    raw=dict(DSO=5000.,DSD=7000.,nVoxel=[64,48,40],dVoxel=[31.25,31.25,25.],
+             nDetector=[512,512],dDetector=[7.8125,7.8125],offOrigin=[0,0,0],
+             offDetector=[0,0],mode='cone',image=np.full((64,48,40),np.nan,dtype=np.float32),
+             train=dict(angles=np.array([0.]),projections=projection.cpu().numpy()[None]))
+    with tempfile.TemporaryDirectory() as tmp:
+        path=Path(tmp)/'original.pickle'
+        with path.open('wb') as stream:pickle.dump(raw,stream)
+        original=CTData(path,load_test=False)
+        assert float(original.scanner['DSO'])==5.
+        assert np.allclose(original.scanner['sVoxel'],[2.,1.5,1.])
+        assert torch.equal(original.train[0].original_image,projection[None])
+        assert 'image' not in original.meta
+    print('PASS original pickle scanner units and unused reference CT',flush=True)
+
+
+
+if __name__=='__main__':
+    main()
+    check_fdk()

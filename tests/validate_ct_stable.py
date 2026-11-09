@@ -46,9 +46,11 @@ import tempfile
 from scene.gaussian_model import GaussianModel_Xray
 from xct.io import save_ct_ply,configure_from_ply,field_metadata
 with tempfile.TemporaryDirectory() as tmp:
+    pc.volume_geometry=dict(nVoxel=[128,128,64],sVoxel=[2.,2.,1.],offOrigin=[0.,0.,0.])
     path=Path(tmp)/'standalone.ply';save_ct_ply(pc,path)
     loaded=GaussianModel_Xray(3);loaded.load_ply(str(path));configure_from_ply(loaded,path)
     assert field_metadata(path)['activation']=='softplus'
+    assert loaded.volume_geometry==pc.volume_geometry
     assert loaded.construct_list_of_attributes()==pc.construct_list_of_attributes()
     assert torch.allclose(attenuation(pc),attenuation(loaded))
 print('PASS standalone PLY comments retain field mapping without new point attributes')

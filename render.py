@@ -45,13 +45,17 @@ def main():
     parser.add_argument('-s', '--source_path', help='Camera dataset for 2D rendering; defaults to the saved config')
     parser.add_argument('--split', choices=['train', 'test'], default='test')
     parser.add_argument('--output', type=Path, help='2D output directory or 3D .npy filename')
-    parser.add_argument('--resolution', type=int, nargs=3, default=[256, 256, 256])
-    parser.add_argument('--size', type=float, nargs=3, default=[2., 2., 2.])
-    parser.add_argument('--center', type=float, nargs=3, default=[0., 0., 0.])
+    parser.add_argument('--resolution', type=int, nargs=3, default=None)
+    parser.add_argument('--size', type=float, nargs=3, default=None)
+    parser.add_argument('--center', type=float, nargs=3, default=None)
     args = parser.parse_args()
+    pc, config = load_model(args.model_path, args.iteration)
+    geometry = getattr(pc, 'volume_geometry', config.get('volume_geometry', {}))
+    args.resolution = args.resolution or geometry.get('nVoxel', [256, 256, 256])
+    args.size = args.size or geometry.get('sVoxel', [2., 2., 2.])
+    args.center = args.center or geometry.get('offOrigin', [0., 0., 0.])
     if min(args.resolution) <= 0 or min(args.size) <= 0:
         parser.error('Resolution and size must be positive')
-    pc, config = load_model(args.model_path, args.iteration)
     model_root = Path(args.model_path)
     if model_root.is_file():
         model_root = model_root.parent
