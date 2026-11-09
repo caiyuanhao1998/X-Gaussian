@@ -18,7 +18,7 @@ for index in [0,12,25,37]:
     d=(c2w[:3,:3]@local).double();d=d/d.norm();o=cam.camera_center.double();s=scales.double()
     aa=((d/s)**2).sum();bb=(o*d/s**2).sum();cc=((o/s)**2).sum()
     expected=attenuation(pc).item()*math.sqrt(2*math.pi/aa.item())*math.exp(-.5*(cc-bb*bb/aa).item())
-    value=project_volume(vol,cam,data.scanner,indices,512)
+    value=project_volume(vol,cam,data.scanner,indices)
     assert abs(value.item()/expected-1)<.015,(index,value.item(),expected)
     print('PASS anisotropic Gaussian ray / camera',index,value.item(),expected)
 grad=torch.autograd.grad(value.sum(),[pc._xyz,pc._features_dc,pc._features_rest,pc._opacity,pc._scaling,pc._rotation])

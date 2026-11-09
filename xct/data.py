@@ -23,9 +23,10 @@ def angle2pose(dso, angle):
 
 
 class CTData:
-    def __init__(self, path, device='cuda', load_test=True):
+    def __init__(self, path, device='cuda', load_test=True, load_images=True):
         self.path = Path(path).resolve()
         self.device = device
+        self.load_images = load_images
         self.meta = json.loads((self.path/'meta_data.json').read_text())
         self.scanner = dict(self.meta['scanner'])
         self.scene_scale = 2 / max(self.scanner['sVoxel'])
@@ -50,7 +51,8 @@ class CTData:
             w2c = np.linalg.inv(pose)
             view = torch.tensor(getWorld2View2(w2c[:3,:3].T,w2c[:3,3])).T.to(self.device)
             projection = getProjectionMatrix(.01,100.,fx,fy).T.to(self.device)
-            image = np.load(self.path/frame['file_path']).astype(np.float32)*self.scene_scale
+            image = (np.load(self.path/frame['file_path']).astype(np.float32)*self.scene_scale
+                     if self.load_images else np.zeros(cfg['nDetector'],dtype=np.float32))
             if list(image.shape) != list(cfg['nDetector']):
                 raise ValueError('Projection/metadata resolution mismatch')
             cameras.append(SimpleNamespace(
@@ -61,9 +63,6 @@ class CTData:
                 full_proj_transform=view@projection,
                 camera_center=torch.linalg.inv(view)[3,:3]))
         return cameras
-
-    def load_ground_truth(self):
-        return torch.from_numpy(np.load(self.path/self.meta['vol'])).float().to(self.device)
 
     def initialization(self):
         points = np.load(self.path/('init_'+self.path.name+'.npy'))

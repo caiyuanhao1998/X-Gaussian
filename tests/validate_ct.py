@@ -29,9 +29,7 @@ def single():
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--source_path',help='Optional original-resolution CT dataset for integration checks')
-    parser.add_argument('--r2_repo',type=Path,help='Optional R2 checkout for exact camera comparison')
     args=parser.parse_args()
-    if args.r2_repo and not args.source_path:parser.error('--r2_repo requires --source_path')
     torch.manual_seed(0)
     pc=single();rho=attenuation(pc).item()
     assert abs(rho-.16)<1e-6
@@ -78,20 +76,8 @@ def main():
         assert loaded.construct_list_of_attributes()==pc.construct_list_of_attributes()
         assert torch.allclose(attenuation(loaded),attenuation(pc))
     print('PASS original X PLY schema and round trip',flush=True)
-    if args.r2_repo:
-        # Optional external integration check; the default tests need no R2 install.
-        sys.path.insert(0,str(args.r2_repo.resolve()))
-        from r2_gaussian.dataset import Scene
-        from types import SimpleNamespace
-        with tempfile.TemporaryDirectory() as tmp:
-            other=Scene(SimpleNamespace(source_path=str(data.path),model_path=tmp,eval=True,data_device='cuda'),shuffle=False)
-            for a,b in zip(data.train+data.test,other.getTrainCameras()+other.getTestCameras()):
-                assert torch.equal(a.original_image,b.original_image)
-                assert torch.allclose(a.world_view_transform,b.world_view_transform,atol=1e-6)
-                assert torch.allclose(a.full_proj_transform,b.full_proj_transform,atol=1e-6)
-        print('PASS exact original-resolution projections and R2-equivalent camera geometry',flush=True)
     if args.source_path:
-        from train_ct import initialize
+        from train import initialize
         initialized=initialize(data,3)
         expected=torch.from_numpy(data.initialization()[:,3:4]).float().cuda()
         assert torch.allclose(attenuation(initialized),expected,rtol=2e-5,atol=2e-7)

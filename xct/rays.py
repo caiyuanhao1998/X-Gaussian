@@ -1,41 +1,8 @@
-"""Differentiable cone-ray integration of the voxelized field (no CT supervision)."""
+"""Differentiable Siddon integration of the queried Gaussian volume."""
 import torch
-import torch.nn.functional as F
 
 
-def project_volume_trilinear(volume,camera,scanner,indices,samples=384):
-    device=volume.device;dtype=volume.dtype
-    width=camera.image_width;height=camera.image_height
-    rows=torch.div(indices,width,rounding_mode='floor').to(dtype)
-    cols=(indices%width).to(dtype)
-    detector=torch.tensor(scanner['sDetector'],device=device,dtype=dtype)
-    dsd=float(scanner['DSD'])
-    local=torch.stack([(cols+.5-width/2)*detector[1]/width,
-                       (rows+.5-height/2)*detector[0]/height,
-                       torch.full_like(rows,dsd)],1)
-    c2w=torch.linalg.inv(camera.world_view_transform.T)
-    direction=local@c2w[:3,:3].T
-    direction=direction/torch.linalg.vector_norm(direction,dim=1,keepdim=True)
-    origin=camera.camera_center
-    center=torch.tensor(scanner['offOrigin'],device=device,dtype=dtype)
-    size=torch.tensor(scanner['sVoxel'],device=device,dtype=dtype)
-    inv=torch.where(direction.abs()>1e-8,1/direction,torch.full_like(direction,1e8))
-    a=(center-size/2-origin)*inv;b=(center+size/2-origin)*inv
-    near=torch.minimum(a,b).amax(1).clamp_min(0)
-    far=torch.maximum(a,b).amin(1)
-    length=(far-near).clamp_min(0)
-    t=near[:,None]+length[:,None]*(torch.arange(samples,device=device,dtype=dtype)+.5)/samples
-    xyz=origin[None,None,:]+direction[:,None,:]*t[:,:,None]
-    normalized=(xyz-center)*2/size
-    # volume axes are xyz; grid_sample coordinate order is W,H,D = z,y,x.
-    grid=normalized.flip(-1)[None,:,:,None,:]
-    values=F.grid_sample(volume[None,None],grid,mode='bilinear',padding_mode='zeros',align_corners=False).reshape(len(indices),samples)
-    return values.mean(1)*length
-
-
-def project_volume(volume,camera,scanner,indices,samples=384,method='siddon'):
-    if method=='trilinear':return project_volume_trilinear(volume,camera,scanner,indices,samples)
-    if method!='siddon':raise ValueError(method)
+def project_volume(volume,camera,scanner,indices):
     # Exact path-length integration of this piecewise-constant field (not bitwise TIGRE).
     dtype=volume.dtype;device=volume.device
     rows=torch.div(indices,camera.image_width,rounding_mode='floor').to(dtype)

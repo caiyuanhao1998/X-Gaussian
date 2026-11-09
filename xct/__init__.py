@@ -1,1 +1,1 @@
-"""CT projection and differentiable volume query for unchanged X-Gaussian attributes."""
+"""Shared X-ray projection and CT reconstruction operators."""

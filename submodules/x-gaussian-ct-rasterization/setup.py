@@ -13,7 +13,10 @@ from setuptools import setup
 from torch.utils.cpp_extension import CUDAExtension, BuildExtension
 import os
 
-os.path.dirname(os.path.abspath(__file__))
+glm_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+    '..', 'diff-gaussian-rasterization', 'third_party', 'glm'))
+if not os.path.isfile(os.path.join(glm_dir, 'glm', 'glm.hpp')):
+    raise RuntimeError('Initialize the rasterizer submodule first: git submodule update --init --recursive')
 
 setup(
     name="x_gaussian_ct_rasterization",
@@ -32,14 +35,7 @@ setup(
                 "voxelize_points.cu",
                 "ext.cpp",
             ],
-            extra_compile_args={
-                "nvcc": [
-                    "-I"
-                    + os.path.join(
-                        os.path.dirname(os.path.abspath(__file__)), "third_party/glm/"
-                    )
-                ]
-            },
+            extra_compile_args={"nvcc": ["-I" + glm_dir]},
         )
     ],
     cmdclass={"build_ext": BuildExtension},

@@ -1,4 +1,3 @@
 
-# Preserve vendored header/license formatting and collapse it in GitHub diffs.
-submodules/x-gaussian-ct-rasterization/third_party/** linguist-vendored -whitespace
+# Preserve the upstream CUDA license formatting.
 submodules/x-gaussian-ct-rasterization/LICENSE.md -whitespace

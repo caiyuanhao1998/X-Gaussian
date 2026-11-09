@@ -1,24 +1,17 @@
 *.pyc
-.vscode
+*.so
+*.egg-info/
+__pycache__/
+.venv*
+.vscode/
+build/
+dist/
 output
-build
-diff_rasterization/diff_rast.egg-info
-diff_rasterization/dist
+output_ct
+output_full
+data
+data_full
+logs
+precision_results
 tensorboard_3d
 screenshots
-# Optional CT environment, artifacts and build metadata
-/.venv_ct
-/output_ct
-submodules/x-gaussian-ct-rasterization/*.egg-info/
-
-# Machine-local environments, datasets and experiment outputs
-/.venv
-/.venv*/
-/data
-/data_full
-/logs
-/output_full
-/precision_results
-*.egg-info/
-*.so
-__pycache__/

@@ -1,54 +1,92 @@
+"""Render 2D X-ray projections or directly reconstruct a 3D CT volume."""
+import argparse
+import json
+from pathlib import Path
+
+import numpy as np
+from PIL import Image
 import torch
-from scene import Scene
-import os
 from tqdm import tqdm
-from os import makedirs
-from gaussian_renderer import render
-import torchvision
-from utils.general_utils import safe_state
-from argparse import ArgumentParser
-from arguments import ModelParams, PipelineParams, get_combined_args
-from gaussian_renderer import GaussianModel
 
-def render_set(model_path, name, iteration, views, gaussians, pipeline, background):
-    render_path = os.path.join(model_path, name, "ours_{}".format(iteration), "renders")
-    gts_path = os.path.join(model_path, name, "ours_{}".format(iteration), "gt")
+from scene.gaussian_model import GaussianModel_Xray
+from xct.data import CTData
+from xct.field import query, render
+from xct.io import configure_from_ply, field_metadata
 
-    makedirs(render_path, exist_ok=True)
-    makedirs(gts_path, exist_ok=True)
 
-    for idx, view in enumerate(tqdm(views, desc="Rendering progress")):
-        rendering = render(view, gaussians, pipeline, background)["render"]
-        gt = view.original_image[0:3, :, :]
-        torchvision.utils.save_image(rendering, os.path.join(render_path, '{0:05d}'.format(idx) + ".png"))
-        torchvision.utils.save_image(gt, os.path.join(gts_path, '{0:05d}'.format(idx) + ".png"))
+def load_model(path, iteration=-1):
+    path = Path(path)
+    if path.is_file():
+        model = path
+        config_path = path.parents[2] / 'config.json' if len(path.parents) > 2 else None
+    else:
+        if iteration < 0:
+            checkpoints = list((path / 'point_cloud').glob('iteration_*/point_cloud.ply'))
+            if not checkpoints:
+                raise FileNotFoundError(f'No Gaussian checkpoint in {path}')
+            model = max(checkpoints, key=lambda p: int(p.parent.name.split('_')[-1]))
+        else:
+            model = path / 'point_cloud' / f'iteration_{iteration}' / 'point_cloud.ply'
+        config_path = path / 'config.json'
+    config = json.loads(config_path.read_text()) if config_path and config_path.exists() else {}
+    meta = field_metadata(model)
+    pc = GaussianModel_Xray(meta.get('sh_degree', config.get('sh_degree', 3)))
+    pc.load_ply(str(model))
+    configure_from_ply(pc, model, config)
+    return pc, config
 
-def render_sets(dataset : ModelParams, iteration : int, pipeline : PipelineParams, skip_train : bool, skip_test : bool):
-    with torch.no_grad():
 
-        gaussians = GaussianModel(dataset.sh_degree)
-        scene = Scene(dataset, gaussians, load_iteration=iteration, shuffle=False)
+@torch.no_grad()
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-m', '--model_path', required=True, help='Model directory or standalone CT-trained PLY')
+    parser.add_argument('--mode', choices=['2d', '3d'], default='2d')
+    parser.add_argument('--iteration', type=int, default=-1, help='Defaults to the latest checkpoint')
+    parser.add_argument('-s', '--source_path', help='Camera dataset for 2D rendering; defaults to the saved config')
+    parser.add_argument('--split', choices=['train', 'test'], default='test')
+    parser.add_argument('--output', type=Path, help='2D output directory or 3D .npy filename')
+    parser.add_argument('--resolution', type=int, nargs=3, default=[256, 256, 256])
+    parser.add_argument('--size', type=float, nargs=3, default=[2., 2., 2.])
+    parser.add_argument('--center', type=float, nargs=3, default=[0., 0., 0.])
+    args = parser.parse_args()
+    if min(args.resolution) <= 0 or min(args.size) <= 0:
+        parser.error('Resolution and size must be positive')
+    pc, config = load_model(args.model_path, args.iteration)
+    model_root = Path(args.model_path)
+    if model_root.is_file():
+        model_root = model_root.parent
+    if args.mode == '3d':
+        output = args.output or model_root / 'volume.npy'
+        if output.suffix != '.npy':
+            parser.error('The 3D output must be a .npy filename')
+        volume = query(pc, args.center, args.resolution, args.size)['vol']
+        if not torch.isfinite(volume).all():
+            raise FloatingPointError('Nonfinite CT volume')
+        output.parent.mkdir(parents=True, exist_ok=True)
+        np.save(output, volume.cpu().numpy())
+        output.with_suffix('.json').write_text(json.dumps(dict(axis_order='xyz', sample_location='voxel centers',
+            resolution=args.resolution, size=args.size, center=args.center,
+            spacing=(np.array(args.size) / args.resolution).tolist()), indent=2) + '\n')
+        print(f'Saved 3D CT volume {tuple(volume.shape)} to {output}')
+    else:
+        source = args.source_path or config.get('source_path')
+        if not source:
+            parser.error('2D rendering requires --source_path or a saved model config')
+        # Camera metadata is sufficient: rendering does not read target projections or CT truth.
+        data = CTData(source, load_test=args.split == 'test', load_images=False)
+        cameras = data.test if args.split == 'test' else data.train
+        output = args.output or model_root / f'projections_{args.split}'
+        output.mkdir(parents=True, exist_ok=True)
+        for camera in tqdm(cameras, desc='Rendering 2D projections'):
+            image = render(camera, pc)['render'].squeeze(0).cpu().numpy()
+            if not np.isfinite(image).all():
+                raise FloatingPointError('Nonfinite X-ray projection')
+            np.save(output / f'{camera.image_name}.npy', image)
+            # PNG is a display preview; NPY retains the unnormalized attenuation integral.
+            preview = np.clip(image / max(float(image.max()), 1e-12) * 255, 0, 255).astype(np.uint8)
+            Image.fromarray(preview).save(output / f'{camera.image_name}.png')
+        print(f'Saved {len(cameras)} 2D projections to {output}')
 
-        bg_color = [1,1,1] if dataset.white_background else [0, 0, 0]
-        background = torch.tensor(bg_color, dtype=torch.float32, device="cuda")
 
-        if not skip_train:
-             render_set(dataset.model_path, "train", scene.loaded_iter, scene.getTrainCameras(), gaussians, pipeline, background)
-
-        if not skip_test:
-             render_set(dataset.model_path, "test", scene.loaded_iter, scene.getTestCameras(), gaussians, pipeline, background)
-
-if __name__ == "__main__":
-    parser = ArgumentParser(description="Testing script parameters")
-    model = ModelParams(parser, sentinel=True)
-    pipeline = PipelineParams(parser)
-    parser.add_argument("--iteration", default=-1, type=int)
-    parser.add_argument("--skip_train", action="store_true")
-    parser.add_argument("--skip_test", action="store_true")
-    parser.add_argument("--quiet", action="store_true")
-    args = get_combined_args(parser)
-    print("Rendering " + args.model_path)
-    
-    safe_state(args.quiet)
-
-    render_sets(model.extract(args), args.iteration, pipeline.extract(args), args.skip_train, args.skip_test)
+if __name__ == '__main__':
+    main()

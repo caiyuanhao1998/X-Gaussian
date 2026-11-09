@@ -1,1 +1,3 @@
 CUDA rasterizer/voxelizer adapted from Ruyi-Zha/r2_gaussian commit f2579bfddd9aac009cb797c8503bef8119bbd022. Package renamed to avoid replacing existing installations. Upstream licenses retained. X-Gaussian attributes are mapped to attenuation in xct/field.py; this backend adds no trainable attributes.
+
+The voxel-mean backward chain uses inverse voxel spacing. GLM headers are reused from the existing rasterizer submodule.
