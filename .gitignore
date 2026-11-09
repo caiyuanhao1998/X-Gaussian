@@ -15,4 +15,4 @@ logs
 precision_results
 tensorboard_3d
 screenshots
-pretrained/
+pretrained
