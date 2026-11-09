@@ -62,7 +62,27 @@ This is the official implementation of our ECCV 2024 paper "Radiative Gaussian S
 
 
 <details close>
-<summary><b>CT Reconstruction</b></summary>
+<summary><b>Direct 3D CT Reconstruction</b></summary>
+
+Results on the original five datasets without downsampling, using 50 training projections,
+30,000 training steps and 1,000 refinement steps. CT ground truth is used only for evaluation.
+
+| Dataset | CT resolution | 2D PSNR (dB) | 2D SSIM | 3D PSNR (dB) | 3D SSIM |
+|:--|:--|--:|--:|--:|--:|
+| Chest | 128 × 128 × 128 | 47.21 | 0.9937 | 31.94 | 0.8895 |
+| Abdomen | 512 × 512 × 463 | 48.16 | 0.9968 | 33.33 | 0.8917 |
+| Foot | 256 × 256 × 256 | 44.40 | 0.9869 | 31.88 | 0.8795 |
+| Head | 256 × 256 × 128 | 51.66 | 0.9979 | 40.21 | 0.9732 |
+| Pancreas | 512 × 512 × 240 | 47.65 | 0.9923 | 22.22 | 0.8750 |
+
+2D metrics average 50 held-out views, with each prediction and reference normalized by its own maximum.
+3D metrics use a fixed range of 1 without clipping or intensity correction; SSIM averages nonempty reference slices over all three axes.
+
+</details>
+
+
+<details close>
+<summary><b>Assistant CT Reconstruction</b></summary>
 
 ![results3](/fig/ct_1.png)
 
@@ -108,40 +128,20 @@ data/
 Training reads these files directly and initializes from training projections.
 Datasets and outputs can be stored elsewhere and symlinked into `data/` and `output/`.
 
-## 3. Initialization
-
-Training automatically initializes from training projections using FDK (Ram-Lak), following
-[SAX-NeRF](https://github.com/caiyuanhao1998/SAX-NeRF/blob/master/eval_traditional.py)'s scanner conventions.
-To generate and save the initialization separately:
-
-```shell
-CUDA_VISIBLE_DEVICES=0 python -m xct.initialization --config config/chest.yaml \
-  --output output/chest_init
-```
-
-This saves `fdk_volume.npy`, `initialization.npy` (xyz and density),
-`initial_gaussians.ply`, and `initialization.json` at the original resolution.
-Default training also saves these files in its output folder.
-
-To train from this saved initialization:
-
-```shell
-CUDA_VISIBLE_DEVICES=0 python train.py --config config/chest.yaml \
-  --init_path output/chest_init/initialization.npy --model_path output/chest_reuse
-```
-
-## 4. Training
+## 3. Training
 
 ```shell
 CUDA_VISIBLE_DEVICES=0 python train.py --config config/chest.yaml
 ```
+
+Training reuses cached initialization when available; otherwise it computes and saves FDK initialization automatically.
 
 Training jointly optimizes one Gaussian field for 2D projection rendering and 3D
 reconstruction, using projection loss, 3D TV, and volume-ray consistency. The default
 recipe runs 30,000 base steps and 1,000 refinement steps. CT ground truth is not used
 for training. The original Gaussian attributes are retained.
 
-## 5. Testing
+## 4. Testing
 
 ### 2D Projection Rendering
 
