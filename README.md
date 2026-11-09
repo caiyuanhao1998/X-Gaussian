@@ -123,17 +123,17 @@ This saves `fdk_volume.npy`, `initialization.npy` (xyz and density),
 `initial_gaussians.ply`, and `initialization.json` at the original resolution.
 Default training also saves these files in its output folder.
 
-## 4. Training
-
-```shell
-CUDA_VISIBLE_DEVICES=0 python train.py --config config/chest.yaml
-```
-
-To reuse a saved initialization:
+To train from this saved initialization:
 
 ```shell
 CUDA_VISIBLE_DEVICES=0 python train.py --config config/chest.yaml \
   --init_path output/chest_init/initialization.npy --model_path output/chest_reuse
+```
+
+## 4. Training
+
+```shell
+CUDA_VISIBLE_DEVICES=0 python train.py --config config/chest.yaml
 ```
 
 Training jointly optimizes one Gaussian field for 2D projection rendering and 3D
