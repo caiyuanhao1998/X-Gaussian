@@ -9,7 +9,6 @@
 [![Video](https://img.shields.io/badge/YouTube-Video-ff0000?logo=youtube)](https://www.youtube.com/watch?v=v6FESb3SkJg&t=28s)
 [![AK](https://img.shields.io/badge/media-AK-green)](https://x.com/_akhaliq/status/1765929288044290253?s=46)
 [![MrNeRF](https://img.shields.io/badge/media-MrNeRF-green)](https://x.com/janusch_patas/status/1766446189749150126?s=46)
-[![RF](https://img.shields.io/badge/media-RF-green)](https://radiancefields.com/x-gaussian-radiance-meets-radiation)
 [![Hugging Face datasets](fig/badges/huggingface_datasets.svg)](https://huggingface.co/datasets/CaiYuanhao/X-Gaussian)
 [![Hugging Face models](fig/badges/huggingface_models.svg)](https://huggingface.co/CaiYuanhao/X-Gaussian)
 
