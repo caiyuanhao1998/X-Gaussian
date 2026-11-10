@@ -144,7 +144,7 @@ bash install.sh
 ## 2. Dataset
 
 Download the original five CT datasets and three real scans from [Hugging Face](https://huggingface.co/datasets/CaiYuanhao/X-Gaussian).
-The original five datasets are also available on [Google Drive](https://drive.google.com/drive/folders/1W46wpeN7byWLC0f3cGIvoT_xbwT1b7gZ?usp=sharing).
+These datasets are also available on [Google Drive](https://drive.google.com/drive/folders/1tBGulq6l-Gp_SI1UyylJgr9Zw01Oie3R?usp=sharing).
 With [Git LFS](https://git-lfs.com/) installed, run from the project root:
 
 ```shell
@@ -179,11 +179,28 @@ See the [real-data sources and format](https://huggingface.co/datasets/CaiYuanha
 
 ## 3. Testing
 
-Download the pretrained models from [Hugging Face](https://huggingface.co/CaiYuanhao/X-Gaussian) using Git LFS:
+### Prepare Pretrained Models
+Please download the pretrained models from [Hugging Face](https://huggingface.co/CaiYuanhao/X-Gaussian) using Git LFS:
 
 ```shell
 git lfs install
 git clone https://huggingface.co/CaiYuanhao/X-Gaussian pretrained
+```
+
+Our models can also be downloaded from [Google Drive](https://drive.google.com/drive/folders/1TmpuxMgKufvn_ltq0Z16smQfyKZrhR2F?usp=sharing). Please organize the models in `pretrained/` as
+```text
+|--pretrained/
+      |--synthetic
+            # The first five datasets are used in our paper
+            |--chest
+            |--abdomen
+            |--foot
+            |--head
+            |--pancreas
+      |--real
+            |--pine
+            |--seashell
+            |--walnut
 ```
 
 ### 2D Projection Rendering
