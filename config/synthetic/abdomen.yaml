@@ -25,7 +25,45 @@ scale_ceiling: 1.0
 lr_final_ratio: 0.1
 density_min: 1.0e-06
 prune_from: 2000
-refine_iterations: 1000
-ray_weight: 2.0
+ray_weight: 2000.0
 ray_count: 8192
 seed: 0
+ray_padding: 0
+refinement_stages:
+- refine_ray_loss: mse
+  refine_projection_weight: 0.25
+  refine_lambda_tv: 0.05
+  refine_checkpoint_every: 1000
+  iterations: 5000
+  ray_weight: 2000.0
+  ray_count: 8192
+- refine_ray_loss: mse
+  refine_projection_weight: 0.0
+  refine_lambda_tv: 0.3
+  refine_checkpoint_every: 2000
+  refine_lambda_dssim: 0.2
+  refine_position_lr: 3.0e-05
+  refine_feature_lr: 0.001
+  refine_feature_rest_lr: 5.0e-05
+  refine_opacity_lr: 0.003
+  refine_scaling_lr: 0.0003
+  refine_rotation_lr: 0.0001
+  refine_lr_final_ratio: 0.2
+  ray_weight: 2000.0
+  ray_count: 8192
+  iterations: 2000
+- refine_ray_loss: mse
+  refine_projection_weight: 0.0
+  refine_lambda_tv: 0.3
+  refine_checkpoint_every: 2000
+  refine_lambda_dssim: 0.2
+  refine_position_lr: 3.0e-05
+  refine_feature_lr: 0.001
+  refine_feature_rest_lr: 5.0e-05
+  refine_opacity_lr: 0.003
+  refine_scaling_lr: 0.0003
+  refine_rotation_lr: 0.0001
+  refine_lr_final_ratio: 0.2
+  ray_weight: 2000.0
+  ray_count: 8192
+  iterations: 8000

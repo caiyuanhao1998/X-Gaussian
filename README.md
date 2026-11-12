@@ -40,6 +40,7 @@ This is the official implementation of our ECCV 2024 paper "Radiative Gaussian S
 
 
 ### News
+- **2026.11.12 :** We updated the direct CT reconstruction code, scene configurations and pretrained models, reaching **33.25 dB** on synthetic scenes and **39.53 dB** on real scans.
 - **2026.11.09 :** We added real-data reconstruction on Pine, Seashell, and Walnut, with [data](https://huggingface.co/datasets/CaiYuanhao/X-Gaussian/tree/main/real) and [pretrained models](https://huggingface.co/CaiYuanhao/X-Gaussian) available on Hugging Face.
 - **2026.11.09 :** We released the [datasets](https://huggingface.co/datasets/CaiYuanhao/X-Gaussian) and [pretrained models](https://huggingface.co/CaiYuanhao/X-Gaussian) on Hugging Face. 🤗
 - **2026.11.08 :** We added direct 3D reconstruction.
@@ -57,58 +58,56 @@ This is the official implementation of our ECCV 2024 paper "Radiative Gaussian S
 <details close>
 <summary><b>Novel View Synthesis</b></summary>
 
-![results1](/fig/nvs_1.png)
+Results from [Table 1 of the original paper](https://arxiv.org/html/2403.04116#S3.T1), not measurements of the CT checkpoints below.
 
-![results2](/fig/nvs_2.png)
+| Scene | 2D PSNR (dB) | 2D SSIM |
+|:--|--:|--:|
+| Chest | 43.887 | 0.9998 |
+| Abdomen | 45.762 | 0.9999 |
+| Foot | 42.153 | 0.9997 |
+| Head | 41.579 | 0.9997 |
+| Pancreas | 43.640 | 0.9976 |
+| **Average** | **43.404** | **0.9993** |
+
+![Original paper NVS comparison](/fig/nvs_1.png)
+
+![Original paper NVS visual results](/fig/nvs_2.png)
 
 </details>
-
 
 <details close>
 <summary><b>Direct 3D CT Reconstruction</b></summary>
 
-Results on the original five datasets without downsampling, using 50 training projections,
-30,000 training steps and 1,000 refinement steps. CT ground truth is used only for evaluation.
+The CT extension uses the original Gaussian point attributes and native data resolution, with 50 training projections per scene. Synthetic recipes use 30,000 base steps and 15,000 refinement steps; real recipes use 30,000 joint projection/3D-TV steps. Settings were selected on held-out training projections. Reference volumes and test projections are used only for evaluation.
 
-| Dataset | CT resolution | 2D PSNR (dB) | 2D SSIM | 3D PSNR (dB) | 3D SSIM |
-|:--|:--|--:|--:|--:|--:|
-| Chest | 128 × 128 × 128 | 47.21 | 0.9937 | 31.94 | 0.8895 |
-| Abdomen | 512 × 512 × 463 | 48.16 | 0.9968 | 33.33 | 0.8917 |
-| Foot | 256 × 256 × 256 | 44.40 | 0.9869 | 31.88 | 0.8795 |
-| Head | 256 × 256 × 128 | 51.66 | 0.9979 | 40.21 | 0.9732 |
-| Pancreas | 512 × 512 × 240 | 47.65 | 0.9923 | 22.22 | 0.8750 |
+3D PSNR uses a fixed range of 1 without clipping or intensity correction. SSIM averages nonempty reference slices along each axis, then across axes. Synthetic references are the original CT volumes; real references are **full-view FDK pseudo-volumes**, not measured CT ground truth.
 
-2D metrics average 50 held-out views, with each prediction and reference normalized by its own maximum.
-3D metrics use a fixed range of 1 without clipping or intensity correction; SSIM averages nonempty reference slices over all three axes.
+| Scene | CT resolution | 3D PSNR (dB) | 3D SSIM |
+|:--|:--|--:|--:|
+| Chest | 128 × 128 × 128 | 36.00 | 0.9391 |
+| Abdomen | 512 × 512 × 463 | 34.27 | 0.8946 |
+| Foot | 256 × 256 × 256 | 32.18 | 0.8815 |
+| Head | 256 × 256 × 128 | 41.44 | 0.9768 |
+| Pancreas | 512 × 512 × 240 | 22.38 | 0.8791 |
+| **Average** | | **33.25** | **0.9142** |
 
 </details>
-
 
 <details close>
 <summary><b>Real Data 3D CT Reconstruction</b></summary>
 
-Results on three real FIPS scans with 50 training and 100 held-out projections,
-560 × 560 detector images, and a 256³ reconstruction grid. Each run uses
-30,000 training steps and 1,000 refinement steps, without further downsampling.
+Real scans contain 50 training and 100 test projections at 560 × 560. The 3D reference is full-view FDK.
 
-| Scene | 2D PSNR (dB) | 2D SSIM | 3D PSNR vs. FDK (dB) | 3D SSIM vs. FDK |
-|:--|--:|--:|--:|--:|
-| Pine | 39.18 | 0.9777 | 37.79 | 0.9399 |
-| Seashell | 32.54 | 0.9749 | 42.62 | 0.9593 |
-| Walnut | 34.24 | 0.9140 | 30.32 | 0.6810 |
+| Scene | CT resolution | 3D PSNR (dB) | 3D SSIM |
+|:--|:--|--:|--:|
+| Pine | 256 × 256 × 256 | 41.80 | 0.9465 |
+| Seashell | 256 × 256 × 256 | 44.01 | 0.9638 |
+| Walnut | 256 × 256 × 256 | 32.77 | 0.7169 |
+| **Average** | | **39.53** | **0.8757** |
 
-2D metrics average the 100 held-out measured projections, with each image
-normalized by its own maximum. The 3D reference is **full-view FDK**, not measured
-CT ground truth; 3D metrics use a fixed range of 1 without intensity correction.
-The pseudo-reference and test views are not used for training or initialization.
-
-![Real X-ray rendering and direct CT reconstruction](fig/real_data.png)
-
-Left to right: measured X-ray, rendered X-ray, full-view FDK pseudo-reference,
-and X-Gaussian CT. CT previews use the same fixed 0–1 intensity range.
+![Real-data reconstruction](fig/real_data.png)
 
 </details>
-
 
 <details close>
 <summary><b>Assistant CT Reconstruction</b></summary>
@@ -134,10 +133,12 @@ Use Linux with a CUDA 11.8 toolkit (`nvcc`). The environment installs Python 3.9
 PyTorch 2.1.2 and GCC 11 for both 2D projection rendering and 3D CT reconstruction.
 
 ```shell
-git clone --recursive https://github.com/caiyuanhao1998/X-Gaussian.git
+git clone https://github.com/caiyuanhao1998/X-Gaussian.git
 cd X-Gaussian
 conda env create -f environment.yml
 conda activate x_gaussian
+export CUDA_HOME=/usr/local/cuda-11.8
+export PATH="$CUDA_HOME/bin:$PATH"
 bash install.sh
 ```
 
@@ -205,6 +206,9 @@ Our models can also be downloaded from [Google Drive](https://drive.google.com/d
 
 ### 2D Projection Rendering
 
+The downloaded checkpoints use the CT extension. Their measured projection metrics
+are separate from the original paper NVS results reported above.
+
 ```shell
 # synthetic scenes
 python render.py -m pretrained/synthetic/chest --mode 2d
@@ -220,6 +224,16 @@ python render.py -m pretrained/real/walnut --mode 2d
 ```
 
 Renders test cameras to each model folder’s `projections_test/` (raw NPY and PNG previews).
+
+For physical integration of the same CT field, use:
+
+```shell
+python render.py -m pretrained/synthetic/chest --mode 2d --projection_renderer volume
+```
+
+The CUDA ray integrator is installed with the same environment. Add `--ray_backend torch`
+to use the reference implementation. Physical integration and Gaussian rasterization
+are different projection operators; both use the same trained field.
 
 ### 3D Reconstruction Testing
 
@@ -276,10 +290,28 @@ Checkpoints are saved to `output/synthetic/<scene>/` or `output/real/<scene>/`.
 Training reuses cached initialization when available; otherwise it computes and
 saves FDK initialization automatically from the training projections.
 
-Training jointly optimizes one Gaussian field for 2D projection rendering and 3D
-reconstruction, using projection loss, 3D TV, and volume-ray consistency. The default
-recipe runs 30,000 base steps and 1,000 refinement steps. CT ground truth is not used
-for training. The original Gaussian attributes are retained.
+Training jointly optimizes one Gaussian field for 2D projection rendering and direct 3D
+reconstruction. The default YAML files contain the complete scene recipes: synthetic
+scenes use 30,000 base steps plus three refinement stages (5,000 + 2,000 + 8,000);
+real scenes use 30,000 joint projection/3D-TV steps. Each refinement stage resets Adam
+and the random seed. No reference CT or test projection is used for training.
+
+Real-data physical ray integration includes a 32-voxel margin at native spacing;
+CT exports retain the original size. The original Gaussian point attributes are retained.
+
+## 5. Evaluation
+
+After rendering projections and exporting the volume, evaluate a checkpoint with:
+
+```shell
+python evaluate.py -m pretrained/synthetic/chest
+```
+
+Use `--mode 3d` to evaluate only `volume.npy`, or `--projection_renderer volume` after
+rendering with that operator. Evaluation reads reference data and writes
+`evaluation_raster.json` or `evaluation_volume.json`; training does not read the
+reference CT. Measured CT-extension projection scores are not the original paper
+NVS experiment. The 3D protocol is described under Performance.
 
 ## Citation
 ```sh

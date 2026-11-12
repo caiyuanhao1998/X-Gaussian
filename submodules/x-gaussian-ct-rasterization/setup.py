@@ -36,7 +36,12 @@ setup(
                 "ext.cpp",
             ],
             extra_compile_args={"nvcc": ["-I" + glm_dir]},
-        )
+        ),
+        CUDAExtension(
+            name="x_gaussian_ct_rasterization._rays",
+            sources=["cuda_rays/bindings.cpp", "cuda_rays/siddon.cu"],
+            extra_compile_args={"cxx": ["-O3"], "nvcc": ["-O3", "--expt-relaxed-constexpr", "--fmad=false"]},
+        ),
     ],
     cmdclass={"build_ext": BuildExtension},
 )

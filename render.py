@@ -12,6 +12,7 @@ from scene.gaussian_model import GaussianModel_Xray
 from xct.data import CTData
 from xct.field import query, render
 from xct.io import configure_from_ply, field_metadata
+from xct.rays import padded_scanner, render_volume_projection
 
 
 def load_model(path, iteration=-1):
@@ -44,6 +45,10 @@ def main():
     parser.add_argument('--iteration', type=int, default=-1, help='Defaults to the latest checkpoint')
     parser.add_argument('-s', '--source_path', help='Camera dataset for 2D rendering; defaults to the saved config')
     parser.add_argument('--split', choices=['train', 'test'], default='test')
+    parser.add_argument('--projection_renderer', choices=['raster', 'volume'], default='raster',
+                        help='Fast Gaussian rasterization or physical integration of the native CT field')
+    parser.add_argument('--ray_backend', choices=['auto', 'torch', 'cuda'], default='auto')
+    parser.add_argument('--ray_batch_size', type=int, default=65536)
     parser.add_argument('--output', type=Path, help='2D output directory or 3D .npy filename')
     parser.add_argument('--resolution', type=int, nargs=3, default=None)
     parser.add_argument('--size', type=float, nargs=3, default=None)
@@ -79,10 +84,21 @@ def main():
         # Camera metadata is sufficient: rendering does not read target projections or CT truth.
         data = CTData(source, load_test=args.split == 'test', load_images=False)
         cameras = data.test if args.split == 'test' else data.train
-        output = args.output or model_root / f'projections_{args.split}'
+        suffix = '_volume' if args.projection_renderer == 'volume' else ''
+        output = args.output or model_root / f'projections_{args.split}{suffix}'
         output.mkdir(parents=True, exist_ok=True)
+        if args.projection_renderer == 'volume':
+            padding = config.get('ray_padding', 32 if data.path.is_dir() else 0)
+            scanner = padded_scanner(data.scanner, padding)
+            volume = query(pc, scanner['offOrigin'], scanner['nVoxel'], scanner['sVoxel'])['vol']
+            if not torch.isfinite(volume).all():
+                raise FloatingPointError('Nonfinite CT volume')
         for camera in tqdm(cameras, desc='Rendering 2D projections'):
-            image = render(camera, pc)['render'].squeeze(0).cpu().numpy()
+            if args.projection_renderer == 'volume':
+                image = render_volume_projection(volume, camera, scanner, args.ray_batch_size, args.ray_backend)
+            else:
+                image = render(camera, pc)['render']
+            image = image.squeeze(0).cpu().numpy()
             if not np.isfinite(image).all():
                 raise FloatingPointError('Nonfinite X-ray projection')
             np.save(output / f'{camera.image_name}.npy', image)

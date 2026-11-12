@@ -19,13 +19,53 @@ def rescaled_features(dc, rest, raw, factor, activation, beta):
     return dc+(newraw-raw)[:,None,:]/C0,rest
 
 
+class AttenuationAdam:
+    """Condition attenuation updates through the existing radiative DC attributes.
+
+    Adam moments are optimizer state; no Gaussian parameter or PLY column is added.
+    Geometry keeps its usual optimizer, while opacity and higher coefficients fix
+    the redundant attenuation gauge.
+    """
+    def __init__(self, pc, eps=1e-8):
+        if pc.ct_activation != 'softplus':
+            raise ValueError('Attenuation refinement requires Softplus radiative features')
+        if not math.isfinite(eps) or eps <= 0:
+            raise ValueError('Adam epsilon must be finite and positive')
+        self.eps = eps
+        self.pc, self.steps = pc, 0
+        self.m = torch.zeros_like(pc.get_opacity)
+        self.v = torch.zeros_like(self.m)
+
+    @torch.no_grad()
+    def step(self, rate):
+        from utils.sh_utils import C0
+        pc = self.pc
+        raw = radiative_channels(pc)
+        density = attenuation(pc).clamp_min(1e-12)
+        z = inverse_softplus(density)
+        jacobian = C0 * pc.get_opacity * torch.sigmoid(pc.ct_beta * raw).mean(1, keepdim=True)
+        gradient = pc._features_dc.grad.sum((1, 2))[:, None] / jacobian.clamp_min(1e-12)
+        gradient = gradient * torch.sigmoid(z)
+        if not torch.isfinite(gradient).all():
+            raise FloatingPointError('Nonfinite attenuation gradient')
+        self.steps += 1
+        self.m.mul_(.9).add_(gradient, alpha=.1)
+        self.v.mul_(.999).addcmul_(gradient, gradient, value=.001)
+        update = (self.m / (1-.9**self.steps)) / ((self.v / (1-.999**self.steps)).sqrt()+self.eps)
+        target = torch.nn.functional.softplus(z-rate*update).clamp_min(1e-12)
+        dc, _ = rescaled_features(pc._features_dc, pc._features_rest, raw,
+                                  target/density, pc.ct_activation, pc.ct_beta)
+        pc._features_dc.copy_(dc)
+        pc._features_dc.grad = pc._features_rest.grad = pc._opacity.grad = None
+
+
 @torch.no_grad()
 def refine(pc, args, bbox):
     """Clone/split with conserved attenuation mass, then account for pruning."""
     before=len(pc.get_xyz)
     mass_before=float((attenuation(pc).squeeze(1)*pc.get_scaling.prod(1)).sum())
     grads=(pc.xyz_gradient_accum/pc.denom).nan_to_num(0.).squeeze(1)
-    large=pc.get_scaling.amax(1)>args.percent_dense*2.
+    large=pc.get_scaling.amax(1)>getattr(args, 'densify_scale_threshold', args.percent_dense*2.)
     eligible=grads>=args.densify_grad_threshold
     clone=eligible&~large
     split=eligible&large
@@ -46,7 +86,7 @@ def refine(pc, args, bbox):
         scale=pc.get_scaling[split]
         newscale=(scale/1.6).clamp(args.scale_floor,args.scale_ceiling)
         raw=radiative_channels(pc)[split]
-        factor=(scale.prod(1)/(2*newscale.prod(1)))[:,None]
+        factor=(scale.prod(1)/(2*newscale.prod(1)))[:,None] if getattr(args, 'split_mass_conserve', True) else scale.new_full((len(scale),1), .5)
         dc,rest=rescaled_features(pc._features_dc[split],pc._features_rest[split],raw,factor,pc.ct_activation,pc.ct_beta)
         new_opacity=pc._opacity[split]
         from utils.general_utils import build_rotation
@@ -64,7 +104,7 @@ def refine(pc, args, bbox):
     # Keep a weak point until the grace period ends; prune by actual attenuation.
     if args.current_step<args.prune_from:low=torch.zeros_like(low)
     xyz=pc.get_xyz;radius=3*pc.get_scaling.amax(1,keepdim=True)
-    outside=((xyz+radius<bbox[0].cuda())|(xyz-radius>bbox[1].cuda())).any(1)
+    outside=((xyz<bbox[0].cuda())|(xyz>bbox[1].cuda())).any(1) if getattr(args, 'prune_center_only', False) else ((xyz+radius<bbox[0].cuda())|(xyz-radius>bbox[1].cuda())).any(1)
     nlow=int(low.sum());nout=int((outside&~low).sum())
     pc.prune_points(low|outside)
     pc.xyz_gradient_accum.zero_();pc.denom.zero_();pc.max_radii2D.zero_()

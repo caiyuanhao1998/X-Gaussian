@@ -241,19 +241,13 @@ class GaussianVoxelizer(nn.Module):
 
         voxel_settings = self.voxel_settings
 
-        if ((scales is None or rotations is None) and cov3D_precomp is None) or (
-            (scales is not None or rotations is not None) and cov3D_precomp is not None
-        ):
-            raise Exception(
-                "Please provide exactly one of either scale/rotation pair or precomputed 3D covariance!"
+        if cov3D_precomp is not None:
+            raise NotImplementedError(
+                "CT voxelization requires scales and rotations; precomputed covariance is unsupported."
             )
-
-        if scales is None:
-            scales = torch.Tensor([])
-        if rotations is None:
-            rotations = torch.Tensor([])
-        if cov3D_precomp is None:
-            cov3D_precomp = torch.Tensor([])
+        if scales is None or rotations is None:
+            raise ValueError("Both scales and rotations are required for CT voxelization.")
+        cov3D_precomp = torch.Tensor([])
 
         # Invoke C++/CUDA rasterization routine
         return voxelize_gaussians(
