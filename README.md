@@ -58,17 +58,6 @@ This is the official implementation of our ECCV 2024 paper "Radiative Gaussian S
 <details close>
 <summary><b>Novel View Synthesis</b></summary>
 
-Results from [Table 1 of the original paper](https://arxiv.org/html/2403.04116#S3.T1), not measurements of the CT checkpoints below.
-
-| Scene | 2D PSNR (dB) | 2D SSIM |
-|:--|--:|--:|
-| Chest | 43.887 | 0.9998 |
-| Abdomen | 45.762 | 0.9999 |
-| Foot | 42.153 | 0.9997 |
-| Head | 41.579 | 0.9997 |
-| Pancreas | 43.640 | 0.9976 |
-| **Average** | **43.404** | **0.9993** |
-
 ![Original paper NVS comparison](/fig/nvs_1.png)
 
 ![Original paper NVS visual results](/fig/nvs_2.png)
