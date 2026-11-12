@@ -188,7 +188,7 @@ git lfs install
 git clone https://huggingface.co/CaiYuanhao/X-Gaussian pretrained
 ```
 
-Our models can also be downloaded from [Google Drive](https://drive.google.com/drive/folders/1TmpuxMgKufvn_ltq0Z16smQfyKZrhR2F?usp=sharing). Please organize the models in `pretrained/` as
+A separately maintained [Google Drive mirror](https://drive.google.com/drive/folders/1TmpuxMgKufvn_ltq0Z16smQfyKZrhR2F?usp=sharing) is also available. Use the Hugging Face download above for the current CT results. Organize the models in `pretrained/` as
 ```text
 |--pretrained/
       |--synthetic
@@ -287,6 +287,7 @@ python train.py --config config/real/walnut.yaml
 ```
 
 Checkpoints are saved to `output/synthetic/<scene>/` or `output/real/<scene>/`.
+To repeat training, use `--model_path` to choose a new output directory.
 Training reuses cached initialization when available; otherwise it computes and
 saves FDK initialization automatically from the training projections.
 
