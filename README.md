@@ -274,18 +274,6 @@ python train.py --config config/real/walnut.yaml
 
 Checkpoints are saved to `output/synthetic/<scene>/` or `output/real/<scene>/`.
 To repeat training, use `--model_path` to choose a new output directory.
-Training reuses cached initialization when available; otherwise it computes and
-saves FDK initialization automatically from the training projections.
-
-Training jointly optimizes one Gaussian field for 2D projection rendering and direct 3D
-reconstruction. The default YAML files contain the complete scene recipes: synthetic
-scenes use 30,000 base steps plus three refinement stages (5,000 + 2,000 + 8,000);
-real scenes use 30,000 joint projection/3D-TV steps. Each refinement stage resets Adam
-and the random seed. No reference CT or test projection is used for training.
-
-Real-data physical ray integration includes a 32-voxel margin at native spacing;
-CT exports retain the original size. The original Gaussian point attributes are retained.
-
 ## 5. Evaluation
 
 After rendering projections and exporting the volume, evaluate a checkpoint with:
@@ -296,8 +284,7 @@ python evaluate.py -m pretrained/synthetic/chest
 
 Use `--mode 3d` to evaluate only `volume.npy`, or `--projection_renderer volume` after
 rendering with that operator. Evaluation reads reference data and writes
-`evaluation_raster.json` or `evaluation_volume.json`; training does not read the
-reference CT. The 3D protocol is described under Performance.
+`evaluation_raster.json` or `evaluation_volume.json`.
 
 ## Citation
 ```sh
