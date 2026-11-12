@@ -195,9 +195,6 @@ A separately maintained [Google Drive mirror](https://drive.google.com/drive/fol
 
 ### 2D Projection Rendering
 
-The downloaded checkpoints use the CT extension. Their measured projection metrics
-are separate from the original paper NVS results reported above.
-
 ```shell
 # synthetic scenes
 python render.py -m pretrained/synthetic/chest --mode 2d
@@ -300,8 +297,7 @@ python evaluate.py -m pretrained/synthetic/chest
 Use `--mode 3d` to evaluate only `volume.npy`, or `--projection_renderer volume` after
 rendering with that operator. Evaluation reads reference data and writes
 `evaluation_raster.json` or `evaluation_volume.json`; training does not read the
-reference CT. Measured CT-extension projection scores are not the original paper
-NVS experiment. The 3D protocol is described under Performance.
+reference CT. The 3D protocol is described under Performance.
 
 ## Citation
 ```sh
