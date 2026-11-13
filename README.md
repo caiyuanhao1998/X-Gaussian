@@ -242,7 +242,7 @@ Saves `volume.npy` in each model folder. Use `--output` to select another path.
 The same trained Gaussians directly define the CT volume:
 
 $$
-V(\mathbf x)=\sum_i\rho_i\exp\!\left[-\frac12
+V(\mathbf x)=\sum_i\rho_i\exp\left[-\frac12
 (\mathbf x-\mathbf p_i)^\top\Sigma_i^{-1}(\mathbf x-\mathbf p_i)\right].
 $$
 
