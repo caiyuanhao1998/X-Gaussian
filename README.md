@@ -10,8 +10,8 @@
 [![Project Page](https://img.shields.io/badge/Project-page-2EA44F)](https://caiyuanhao1998.github.io/project/X-Gaussian/)
 [![AK](https://img.shields.io/badge/media-AK-green)](https://x.com/_akhaliq/status/1765929288044290253?s=46)
 [![MrNeRF](https://img.shields.io/badge/media-MrNeRF-green)](https://x.com/janusch_patas/status/1766446189749150126?s=46)
-[![HF Dataset](https://img.shields.io/badge/HF-Dataset-yellow)](https://huggingface.co/datasets/CaiYuanhao/X-Gaussian)
-[![HF Model](https://img.shields.io/badge/HF-Model-yellow)](https://huggingface.co/CaiYuanhao/X-Gaussian)
+[![HF Dataset](https://img.shields.io/badge/HF-Dataset-yellow?logo=huggingface)](https://huggingface.co/datasets/CaiYuanhao/X-Gaussian)
+[![HF Model](https://img.shields.io/badge/HF-Model-yellow?logo=huggingface)](https://huggingface.co/CaiYuanhao/X-Gaussian)
 
 <h2> Radiative Gaussian Splatting for Efficient X-ray Novel View Synthesis </h2> 
 
