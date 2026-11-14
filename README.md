@@ -5,9 +5,9 @@
 <p align="center"> <img src="3d_demo/logo.png" width="110px"> </p>
 
 [![arXiv](https://img.shields.io/badge/arXiv-2403.04116-b31b1b)](https://arxiv.org/abs/2403.04116)
+[![Video](https://img.shields.io/badge/YouTube-Video-ff0000?logo=youtube)](https://www.youtube.com/watch?v=v6FESb3SkJg&t=28s)
 [![知乎](https://img.shields.io/badge/知乎-中文解读-0084ff)](https://zhuanlan.zhihu.com/p/717744222)
 [![Project Page](https://img.shields.io/badge/Project-page-2EA44F)](https://caiyuanhao1998.github.io/project/X-Gaussian/)
-[![Video](https://img.shields.io/badge/YouTube-Video-ff0000?logo=youtube)](https://www.youtube.com/watch?v=v6FESb3SkJg&t=28s)
 [![AK](https://img.shields.io/badge/media-AK-green)](https://x.com/_akhaliq/status/1765929288044290253?s=46)
 [![MrNeRF](https://img.shields.io/badge/media-MrNeRF-green)](https://x.com/janusch_patas/status/1766446189749150126?s=46)
 [![HF Dataset](https://img.shields.io/badge/HF-Dataset-yellow)](https://huggingface.co/datasets/CaiYuanhao/X-Gaussian)
