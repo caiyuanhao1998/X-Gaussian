@@ -15,19 +15,11 @@
 <h2> Radiative Gaussian Splatting for Efficient X-ray Novel View Synthesis </h2> 
 
 
-<img src="3d_demo/teapot.gif" style="height:200px" /> 
+<p align="center"><img src="3d_demo/ct_reconstruction/chest.gif" width="24%" alt="Chest CT reconstruction during optimization"><img src="3d_demo/ct_reconstruction/foot.gif" width="24%" alt="Foot CT reconstruction during optimization"><img src="3d_demo/ct_reconstruction/head.gif" width="24%" alt="Head CT reconstruction during optimization"><img src="3d_demo/ct_reconstruction/abdomen.gif" width="24%" alt="Abdomen CT reconstruction during optimization"></p>
 
-<img src="3d_demo/foot.gif" style="height:160px" /> 
+<p align="center"><img src="3d_demo/ct_reconstruction/pancreas.gif" width="24%" alt="Pancreas CT reconstruction during optimization"><img src="3d_demo/ct_reconstruction/pine.gif" width="24%" alt="Pine CT reconstruction during optimization"><img src="3d_demo/ct_reconstruction/seashell.gif" width="24%" alt="Seashell CT reconstruction during optimization"><img src="3d_demo/ct_reconstruction/walnut.gif" width="24%" alt="Walnut CT reconstruction during optimization"></p>
 
-<img src="3d_demo/bonsai.gif" style="height:200px" /> 
-
-Point Cloud Visualization
-
-&nbsp;
-
-<img src="3d_demo/training_process.gif" style="height:200px" /> 
-
-Training Process Visualization
+CT Reconstruction During Optimization
 
 </div>
 
@@ -38,6 +30,12 @@ Training Process Visualization
 ### Introduction
 This is the official implementation of our ECCV 2024 paper "Radiative Gaussian Splatting for Efficient X-ray Novel View Synthesis". Our X-Gaussian is SfM-free. If you find this repo useful, please give it a star ⭐ and consider citing our paper. Thank you.
 
+
+<h3 align="center"><img src="fig/exported-mesh-heading.svg" width="600" height="40" alt="Exported Meshes - Click each to open its interactive viewer"></h3>
+
+<p align="center"><a href="https://caiyuanhao1998.github.io/project/X-Gaussian/viewer/mesh.html?scene=chest"><img src="fig/meshes/chest.png" width="24%" alt="Chest exported mesh" title="Open interactive mesh viewer"></a><a href="https://caiyuanhao1998.github.io/project/X-Gaussian/viewer/mesh.html?scene=foot"><img src="fig/meshes/foot.png" width="24%" alt="Foot exported mesh" title="Open interactive mesh viewer"></a><a href="https://caiyuanhao1998.github.io/project/X-Gaussian/viewer/mesh.html?scene=head"><img src="fig/meshes/head.png" width="24%" alt="Head exported mesh" title="Open interactive mesh viewer"></a><a href="https://caiyuanhao1998.github.io/project/X-Gaussian/viewer/mesh.html?scene=abdomen"><img src="fig/meshes/abdomen.png" width="24%" alt="Abdomen exported mesh" title="Open interactive mesh viewer"></a></p>
+
+<p align="center"><a href="https://caiyuanhao1998.github.io/project/X-Gaussian/viewer/mesh.html?scene=pancreas"><img src="fig/meshes/pancreas.png" width="24%" alt="Pancreas exported mesh" title="Open interactive mesh viewer"></a><a href="https://caiyuanhao1998.github.io/project/X-Gaussian/viewer/mesh.html?scene=pine"><img src="fig/meshes/pine.png" width="24%" alt="Pine exported mesh" title="Open interactive mesh viewer"></a><a href="https://caiyuanhao1998.github.io/project/X-Gaussian/viewer/mesh.html?scene=seashell"><img src="fig/meshes/seashell.png" width="24%" alt="Seashell exported mesh" title="Open interactive mesh viewer"></a><a href="https://caiyuanhao1998.github.io/project/X-Gaussian/viewer/mesh.html?scene=walnut"><img src="fig/meshes/walnut.png" width="24%" alt="Walnut exported mesh" title="Open interactive mesh viewer"></a></p>
 
 ### News
 - **2026.11.12 :** We updated the direct CT reconstruction code, scene configurations and pretrained models, reaching **33.25 dB** on synthetic scenes and **39.53 dB** on real scans.
