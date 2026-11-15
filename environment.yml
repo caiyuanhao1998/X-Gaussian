@@ -24,3 +24,6 @@ dependencies:
   - matplotlib==3.7.5
   - plyfile==1.0.3
   - opencv-python==4.10.0.84
+  - scikit-image==0.22.0
+  - trimesh==4.3.2
+  - fast-simplification==0.1.7

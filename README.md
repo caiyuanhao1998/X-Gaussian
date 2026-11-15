@@ -32,6 +32,7 @@ CT Reconstruction During Optimization
 This is the official implementation of our ECCV 2024 paper "Radiative Gaussian Splatting for Efficient X-ray Novel View Synthesis". Our X-Gaussian is SfM-free. If you find this repo useful, please give it a star ⭐ and consider citing our paper. Thank you.
 
 
+<a id="exported-mesh"></a>
 <h3 align="center"><img src="fig/exported-mesh-heading.svg" width="600" height="40" alt="Exported Meshes - Click each to open its interactive viewer"></h3>
 
 <p align="center"><a href="https://caiyuanhao1998.github.io/project/X-Gaussian/viewer/index.html?scene=chest"><img src="fig/meshes/chest.png?v=clean-ring" width="24%" alt="Chest exported mesh" title="Open interactive X-ray viewer"></a><a href="https://caiyuanhao1998.github.io/project/X-Gaussian/viewer/index.html?scene=foot"><img src="fig/meshes/foot.png?v=front15" width="24%" alt="Foot exported mesh" title="Open interactive X-ray viewer"></a><a href="https://caiyuanhao1998.github.io/project/X-Gaussian/viewer/index.html?scene=head"><img src="fig/meshes/head.png?v=front15" width="24%" alt="Head exported mesh" title="Open interactive X-ray viewer"></a><a href="https://caiyuanhao1998.github.io/project/X-Gaussian/viewer/index.html?scene=abdomen"><img src="fig/meshes/abdomen.png?v=clean-ring" width="24%" alt="Abdomen exported mesh" title="Open interactive X-ray viewer"></a></p>
@@ -238,6 +239,8 @@ python render.py -m pretrained/real/walnut --mode 3d
 ```
 
 Saves `volume.npy` in each model folder. Use `--output` to select another path.
+
+Add `--export_mesh` to extract the CT volume mesh as `volume.glb`, as shown in [Exported Mesh](#exported-mesh).
 
 The same trained Gaussians directly define the CT volume:
 

@@ -50,10 +50,17 @@ def main():
     parser.add_argument('--ray_backend', choices=['auto', 'torch', 'cuda'], default='auto')
     parser.add_argument('--ray_batch_size', type=int, default=65536)
     parser.add_argument('--output', type=Path, help='2D output directory or 3D .npy filename')
+    parser.add_argument('--export_mesh', action='store_true',
+                        help='Also extract a CT mesh beside the 3D volume as .glb')
     parser.add_argument('--resolution', type=int, nargs=3, default=None)
     parser.add_argument('--size', type=float, nargs=3, default=None)
     parser.add_argument('--center', type=float, nargs=3, default=None)
     args = parser.parse_args()
+    if args.export_mesh and args.mode != '3d':
+        parser.error('--export_mesh requires --mode 3d')
+    if args.export_mesh:
+        from xct.mesh import export_mesh, infer_scene, mask_resolution, mesh_dependencies
+        mesh_dependencies()
     pc, config = load_model(args.model_path, args.iteration)
     geometry = getattr(pc, 'volume_geometry', config.get('volume_geometry', {}))
     args.resolution = args.resolution or geometry.get('nVoxel', [256, 256, 256])
@@ -61,6 +68,8 @@ def main():
     args.center = args.center or geometry.get('offOrigin', [0., 0., 0.])
     if min(args.resolution) <= 0 or min(args.size) <= 0:
         parser.error('Resolution and size must be positive')
+    if args.export_mesh and min(args.resolution) < 2:
+        parser.error('Mesh export requires at least two voxels per axis')
     model_root = Path(args.model_path)
     if model_root.is_file():
         model_root = model_root.parent
@@ -72,11 +81,25 @@ def main():
         if not torch.isfinite(volume).all():
             raise FloatingPointError('Nonfinite CT volume')
         output.parent.mkdir(parents=True, exist_ok=True)
-        np.save(output, volume.cpu().numpy())
-        output.with_suffix('.json').write_text(json.dumps(dict(axis_order='xyz', sample_location='voxel centers',
+        values = volume.cpu().numpy()
+        np.save(output, values)
+        metadata = dict(axis_order='xyz', sample_location='voxel centers',
             resolution=args.resolution, size=args.size, center=args.center,
-            spacing=(np.array(args.size) / args.resolution).tolist()), indent=2) + '\n')
+            spacing=(np.array(args.size) / args.resolution).tolist())
+        output.with_suffix('.json').write_text(json.dumps(metadata, indent=2) + '\n')
         print(f'Saved 3D CT volume {tuple(volume.shape)} to {output}')
+        if args.export_mesh:
+            scene = infer_scene(args.model_path, config)
+            roi = None
+            if scene in ['abdomen', 'pancreas']:
+                resolution = mask_resolution(args.resolution)
+                if resolution != list(args.resolution):
+                    roi = query(pc, args.center, resolution, args.size)['vol'].cpu().numpy()
+            mesh_path = output.with_suffix('.glb')
+            metadata['mesh'] = export_mesh(values, mesh_path, args.center, args.size,
+                                          scene=scene, roi_volume=roi, reference_geometry=geometry)
+            output.with_suffix('.json').write_text(json.dumps(metadata, indent=2) + '\n')
+            print(f'Saved CT mesh ({metadata["mesh"]["faces"]:,} faces) to {mesh_path}')
     else:
         source = args.source_path or config.get('source_path')
         if not source:
