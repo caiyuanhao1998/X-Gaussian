@@ -11,3 +11,4 @@ scipy==1.13.0
 scikit-image==0.23.2
 trimesh==4.3.2
 fast-simplification==0.1.7
+opencv-python-headless==4.10.0.84
