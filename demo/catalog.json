@@ -1,0 +1,691 @@
+{
+  "chest": {
+    "name": "Chest",
+    "group": "synthetic",
+    "model": "pretrained/synthetic/chest",
+    "checkpoint": "pretrained/synthetic/chest/point_cloud/iteration_45000/point_cloud.ply",
+    "scanner": {
+      "nDetector": [
+        256,
+        256
+      ],
+      "nVoxel": [
+        128,
+        128,
+        128
+      ],
+      "mode": "cone",
+      "DSD": 23.4375,
+      "DSO": 15.625,
+      "offOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "offDetector": [
+        0.0,
+        0.0
+      ],
+      "sVoxel": [
+        2.0,
+        2.0,
+        2.0
+      ],
+      "sDetector": [
+        4.0,
+        4.0
+      ],
+      "dVoxel": [
+        0.015625,
+        0.015625,
+        0.015625
+      ]
+    },
+    "geometry": {
+      "nVoxel": [
+        128,
+        128,
+        128
+      ],
+      "sVoxel": [
+        2.0,
+        2.0,
+        2.0
+      ],
+      "offOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "iteration": 45000,
+    "default_azimuth": 180.0,
+    "default_elevation": 15.0,
+    "exposure": 6.0,
+    "fields": {
+      "chest.bin.gz": "ct_viewer/cleaned/synthetic/chest.bin.gz"
+    },
+    "rotation": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        6.123233995736766e-17,
+        1.0
+      ],
+      [
+        0.0,
+        -1.0,
+        6.123233995736766e-17
+      ]
+    ]
+  },
+  "foot": {
+    "name": "Foot",
+    "group": "synthetic",
+    "model": "pretrained/synthetic/foot",
+    "checkpoint": "pretrained/synthetic/foot/point_cloud/iteration_45000/point_cloud.ply",
+    "scanner": {
+      "nDetector": [
+        512,
+        512
+      ],
+      "nVoxel": [
+        256,
+        256,
+        256
+      ],
+      "mode": "cone",
+      "DSD": 11.71875,
+      "DSO": 7.8125,
+      "offOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "offDetector": [
+        0.0,
+        0.0
+      ],
+      "sVoxel": [
+        2.0,
+        2.0,
+        2.0
+      ],
+      "sDetector": [
+        4.0,
+        4.0
+      ],
+      "dVoxel": [
+        0.0078125,
+        0.0078125,
+        0.0078125
+      ]
+    },
+    "geometry": {
+      "nVoxel": [
+        256,
+        256,
+        256
+      ],
+      "sVoxel": [
+        2.0,
+        2.0,
+        2.0
+      ],
+      "offOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "iteration": 45000,
+    "default_azimuth": 180.0,
+    "default_elevation": -15.0,
+    "exposure": 4.0,
+    "fields": {
+      "foot.bin.gz": "ct_viewer/synthetic/foot.bin.gz"
+    },
+    "rotation": [
+      [
+        -1.0,
+        -7.498798913309288e-33,
+        -1.2246467991473532e-16
+      ],
+      [
+        1.2246467991473532e-16,
+        -6.123233995736766e-17,
+        -1.0
+      ],
+      [
+        0.0,
+        -1.0,
+        6.123233995736766e-17
+      ]
+    ]
+  },
+  "head": {
+    "name": "Head",
+    "group": "synthetic",
+    "model": "pretrained/synthetic/head",
+    "checkpoint": "pretrained/synthetic/head/point_cloud/iteration_45000/point_cloud.ply",
+    "scanner": {
+      "nDetector": [
+        512,
+        512
+      ],
+      "nVoxel": [
+        256,
+        256,
+        128
+      ],
+      "mode": "cone",
+      "DSD": 11.626090062204232,
+      "DSO": 7.750726708136155,
+      "offOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "offDetector": [
+        0.0,
+        0.0
+      ],
+      "sVoxel": [
+        1.9759734912745421,
+        2.0,
+        1.5652648392313264
+      ],
+      "sDetector": [
+        3.9683720745657114,
+        3.9683720745657114
+      ],
+      "dVoxel": [
+        0.00771864645029118,
+        0.0078125,
+        0.012228631556494738
+      ]
+    },
+    "geometry": {
+      "nVoxel": [
+        256,
+        256,
+        128
+      ],
+      "sVoxel": [
+        1.9759734912745421,
+        2.0,
+        1.5652648392313264
+      ],
+      "offOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "iteration": 45000,
+    "default_azimuth": 105.0,
+    "default_elevation": 0.0,
+    "exposure": 7.0,
+    "fields": {
+      "head.bin.gz": "ct_viewer/synthetic/head.bin.gz"
+    },
+    "rotation": [
+      [
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        -1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        -1.0,
+        0.0
+      ]
+    ]
+  },
+  "abdomen": {
+    "name": "Abdomen",
+    "group": "synthetic",
+    "model": "pretrained/synthetic/abdomen",
+    "checkpoint": "pretrained/synthetic/abdomen/point_cloud/iteration_45000/point_cloud.ply",
+    "scanner": {
+      "nDetector": [
+        1024,
+        1024
+      ],
+      "nVoxel": [
+        512,
+        512,
+        463
+      ],
+      "mode": "cone",
+      "DSD": 6.479481641468682,
+      "DSO": 4.319654427645788,
+      "offOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "offDetector": [
+        0.0,
+        0.0
+      ],
+      "sVoxel": [
+        1.3822894168466522,
+        1.3822894168466522,
+        2.0
+      ],
+      "sDetector": [
+        4.423326133909287,
+        4.423326133909287
+      ],
+      "dVoxel": [
+        0.0026997840172786176,
+        0.0026997840172786176,
+        0.004319654427645789
+      ]
+    },
+    "geometry": {
+      "nVoxel": [
+        512,
+        512,
+        463
+      ],
+      "sVoxel": [
+        1.3822894168466522,
+        1.3822894168466522,
+        2.0
+      ],
+      "offOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "iteration": 45000,
+    "default_azimuth": 90.0,
+    "default_elevation": 15.0,
+    "exposure": 10.0,
+    "fields": {
+      "abdomen.bin.gz": "ct_viewer/cleaned/synthetic/abdomen.bin.gz",
+      "abdomen-preview.bin.gz": "ct_viewer/cleaned/synthetic/abdomen-preview.bin.gz"
+    },
+    "rotation": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        6.123233995736766e-17,
+        1.0
+      ],
+      [
+        0.0,
+        -1.0,
+        6.123233995736766e-17
+      ]
+    ]
+  },
+  "pancreas": {
+    "name": "Pancreas",
+    "group": "synthetic",
+    "model": "pretrained/synthetic/pancreas",
+    "checkpoint": "pretrained/synthetic/pancreas/point_cloud/iteration_45000/point_cloud.ply",
+    "scanner": {
+      "nDetector": [
+        1024,
+        1024
+      ],
+      "nVoxel": [
+        512,
+        512,
+        240
+      ],
+      "mode": "cone",
+      "DSD": 5.859375,
+      "DSO": 3.90625,
+      "offOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "offDetector": [
+        0.0,
+        0.0
+      ],
+      "sVoxel": [
+        2.0,
+        2.0,
+        1.0875
+      ],
+      "sDetector": [
+        4.0,
+        4.0
+      ],
+      "dVoxel": [
+        0.00390625,
+        0.00390625,
+        0.00453125
+      ]
+    },
+    "geometry": {
+      "nVoxel": [
+        512,
+        512,
+        240
+      ],
+      "sVoxel": [
+        2.0,
+        2.0,
+        1.0875
+      ],
+      "offOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "iteration": 45000,
+    "default_azimuth": 270.0,
+    "default_elevation": 15.0,
+    "exposure": 3.0,
+    "fields": {
+      "pancreas.bin.gz": "ct_viewer/cleaned/synthetic/pancreas.bin.gz",
+      "pancreas-preview.bin.gz": "ct_viewer/cleaned/synthetic/pancreas-preview.bin.gz"
+    },
+    "rotation": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        6.123233995736766e-17,
+        1.0
+      ],
+      [
+        0.0,
+        -1.0,
+        6.123233995736766e-17
+      ]
+    ]
+  },
+  "pine": {
+    "name": "Pine",
+    "group": "real",
+    "model": "pretrained/real/pine",
+    "checkpoint": "pretrained/real/pine/point_cloud/iteration_30000/point_cloud.ply",
+    "scanner": {
+      "mode": "cone",
+      "DSD": 27.687,
+      "DSO": 11.533,
+      "nDetector": [
+        560,
+        560
+      ],
+      "sDetector": [
+        5.6000000000000005,
+        5.6000000000000005
+      ],
+      "nVoxel": [
+        256,
+        256,
+        256
+      ],
+      "sVoxel": [
+        2.0,
+        2.0,
+        2.0
+      ],
+      "offOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "offDetector": [
+        0.0,
+        0.0
+      ],
+      "accuracy": 0.5,
+      "totalAngle": 360.0,
+      "startAngle": 0.0,
+      "noise": true,
+      "filter": null,
+      "dVoxel": [
+        0.0078125,
+        0.0078125,
+        0.0078125
+      ]
+    },
+    "geometry": {
+      "nVoxel": [
+        256,
+        256,
+        256
+      ],
+      "sVoxel": [
+        2.0,
+        2.0,
+        2.0
+      ],
+      "offOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "iteration": 30000,
+    "default_azimuth": 235.0,
+    "default_elevation": 15.0,
+    "exposure": 14.0,
+    "fields": {
+      "pine.bin.gz": "ct_viewer/real/pine.bin.gz"
+    },
+    "rotation": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        6.123233995736766e-17,
+        1.0
+      ],
+      [
+        0.0,
+        -1.0,
+        6.123233995736766e-17
+      ]
+    ]
+  },
+  "seashell": {
+    "name": "Seashell",
+    "group": "real",
+    "model": "pretrained/real/seashell",
+    "checkpoint": "pretrained/real/seashell/point_cloud/iteration_30000/point_cloud.ply",
+    "scanner": {
+      "mode": "cone",
+      "DSD": 27.687,
+      "DSO": 10.533,
+      "nDetector": [
+        560,
+        560
+      ],
+      "sDetector": [
+        5.6000000000000005,
+        5.6000000000000005
+      ],
+      "nVoxel": [
+        256,
+        256,
+        256
+      ],
+      "sVoxel": [
+        2.0,
+        2.0,
+        2.0
+      ],
+      "offOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "offDetector": [
+        0.0,
+        0.0
+      ],
+      "accuracy": 0.5,
+      "totalAngle": 360.0,
+      "startAngle": 0.0,
+      "noise": true,
+      "filter": null,
+      "dVoxel": [
+        0.0078125,
+        0.0078125,
+        0.0078125
+      ]
+    },
+    "geometry": {
+      "nVoxel": [
+        256,
+        256,
+        256
+      ],
+      "sVoxel": [
+        2.0,
+        2.0,
+        2.0
+      ],
+      "offOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "iteration": 30000,
+    "default_azimuth": 305.0,
+    "default_elevation": 15.0,
+    "exposure": 6.0,
+    "fields": {
+      "seashell.bin.gz": "ct_viewer/real/seashell.bin.gz"
+    },
+    "rotation": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        6.123233995736766e-17,
+        1.0
+      ],
+      [
+        0.0,
+        -1.0,
+        6.123233995736766e-17
+      ]
+    ]
+  },
+  "walnut": {
+    "name": "Walnut",
+    "group": "real",
+    "model": "pretrained/real/walnut",
+    "checkpoint": "pretrained/real/walnut/point_cloud/iteration_30000/point_cloud.ply",
+    "scanner": {
+      "mode": "cone",
+      "DSD": 27.687,
+      "DSO": 10.533,
+      "nDetector": [
+        560,
+        560
+      ],
+      "sDetector": [
+        5.6000000000000005,
+        5.6000000000000005
+      ],
+      "nVoxel": [
+        256,
+        256,
+        256
+      ],
+      "sVoxel": [
+        2.0,
+        2.0,
+        2.0
+      ],
+      "offOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "offDetector": [
+        0.0,
+        0.0
+      ],
+      "accuracy": 0.5,
+      "totalAngle": 360.0,
+      "startAngle": 0.0,
+      "noise": true,
+      "filter": null,
+      "dVoxel": [
+        0.0078125,
+        0.0078125,
+        0.0078125
+      ]
+    },
+    "geometry": {
+      "nVoxel": [
+        256,
+        256,
+        256
+      ],
+      "sVoxel": [
+        2.0,
+        2.0,
+        2.0
+      ],
+      "offOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "iteration": 30000,
+    "default_azimuth": 270.0,
+    "default_elevation": 15.0,
+    "exposure": 8.0,
+    "fields": {
+      "walnut.bin.gz": "ct_viewer/real/walnut.bin.gz"
+    },
+    "rotation": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        6.123233995736766e-17,
+        1.0
+      ],
+      [
+        0.0,
+        -1.0,
+        6.123233995736766e-17
+      ]
+    ]
+  }
+}

@@ -11,6 +11,7 @@
 [![AK](https://img.shields.io/badge/media-AK-green)](https://x.com/_akhaliq/status/1765929288044290253?s=46)
 [![MrNeRF](https://img.shields.io/badge/media-MrNeRF-green)](https://x.com/janusch_patas/status/1766446189749150126?s=46)
 [![HF Dataset](https://img.shields.io/badge/HF-Dataset-yellow?logo=huggingface)](https://huggingface.co/datasets/CaiYuanhao/X-Gaussian)
+[![HF Demo](https://img.shields.io/badge/HF-Demo-orange?logo=huggingface)](https://huggingface.co/spaces/CaiYuanhao/X-Gaussian)
 [![HF Model](https://img.shields.io/badge/HF-Model-yellow?logo=huggingface)](https://huggingface.co/CaiYuanhao/X-Gaussian)
 
 <h2> Radiative Gaussian Splatting for Efficient X-ray Novel View Synthesis </h2> 
@@ -40,6 +41,7 @@ This is the official implementation of our ECCV 2024 paper "Radiative Gaussian S
 <p align="center"><a href="https://caiyuanhao1998.github.io/project/X-Gaussian/viewer/index.html?scene=pancreas"><img src="fig/meshes/pancreas.png?v=clean-ring" width="24%" alt="Pancreas exported mesh" title="Open interactive X-ray viewer"></a><a href="https://caiyuanhao1998.github.io/project/X-Gaussian/viewer/index.html?scene=pine"><img src="fig/meshes/pine.png?v=front15" width="24%" alt="Pine exported mesh" title="Open interactive X-ray viewer"></a><a href="https://caiyuanhao1998.github.io/project/X-Gaussian/viewer/index.html?scene=seashell"><img src="fig/meshes/seashell.png?v=front15" width="24%" alt="Seashell exported mesh" title="Open interactive X-ray viewer"></a><a href="https://caiyuanhao1998.github.io/project/X-Gaussian/viewer/index.html?scene=walnut"><img src="fig/meshes/walnut.png?v=front15" width="24%" alt="Walnut exported mesh" title="Open interactive X-ray viewer"></a></p>
 
 ### News
+- **2026.11.17 :** We released our [interactive online demo](https://huggingface.co/spaces/CaiYuanhao/X-Gaussian) for Gaussian point clouds, linked CT slices, X-ray rendering, and mesh export.
 - **2026.11.14 :** We added [CT mesh export](#3d-reconstruction-testing) with `--export_mesh`.
 - **2026.11.14 :** We launched our [project page](https://caiyuanhao1998.github.io/project/X-Gaussian/) and released [CT meshes](https://huggingface.co/datasets/CaiYuanhao/X-Gaussian/tree/main/meshes) and [interactive X-ray visualizations](https://caiyuanhao1998.github.io/project/X-Gaussian/viewer/index.html?scene=head).
 - **2026.11.12 :** We updated the direct CT reconstruction code, scene configurations and pretrained models, reaching **33.25 dB** on synthetic scenes and **39.53 dB** on real scans.
@@ -194,6 +196,22 @@ A separately maintained [Google Drive mirror](https://drive.google.com/drive/fol
             |--seashell
             |--walnut
 ```
+
+### Interactive Demo
+
+Try our [online demo](https://huggingface.co/spaces/CaiYuanhao/X-Gaussian), or run it locally. Choose one of eight scenes or upload an X-Gaussian PLY to explore the Gaussian model, linked CT slices, X-ray projections, and exported meshes.
+
+[![X-Gaussian interactive demo](fig/gradio_demo.png)](https://huggingface.co/spaces/CaiYuanhao/X-Gaussian)
+
+With the `x_gaussian` environment activated, install the interface in a separate Python 3.11 environment and launch:
+
+```shell
+conda create -n x_gaussian_demo python=3.11 -y
+conda run -n x_gaussian_demo pip install -r demo/requirements.txt
+conda run --no-capture-output -n x_gaussian_demo python demo/app.py --cuda-python "$CONDA_PREFIX/bin/python"
+```
+
+Open `http://127.0.0.1:7860`. Example weights and browser assets are downloaded from Hugging Face when missing; no projection dataset is required.
 
 ### 2D Projection Rendering
 
