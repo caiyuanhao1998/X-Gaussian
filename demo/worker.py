@@ -21,7 +21,7 @@ SPECS={s['scene']:s for s in json.loads((ROOT/'static/assets/scene-manifest.json
 class Engine:
     def __init__(self,device,shared_gpu=False):
         if not shared_gpu:torch.cuda.set_device(device)
-        torch.set_num_threads(2)
+        torch.set_num_threads(1 if shared_gpu else 2)
         self.models={}
         self.scene=None;self.pc=None;self.catalog=dict(CATALOG)
 

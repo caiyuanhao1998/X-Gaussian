@@ -9,10 +9,12 @@ for variable in ('OMP_NUM_THREADS', 'MKL_NUM_THREADS', 'OPENBLAS_NUM_THREADS'):
 os.environ.setdefault('GRADIO_ANALYTICS_ENABLED', 'False')
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 # Install ZeroGPU's CUDA emulation before importing PyTorch or the inference engine.
+print('Initializing X-Gaussian ZeroGPU runtime', flush=True)
 import spaces
 import gradio as gr
 import uvicorn
 from assets import CACHE
+print('Loading example checkpoint metadata', flush=True)
 from worker import Engine, CATALOG, load_model
 from app import build_app
 
@@ -21,6 +23,7 @@ engine = Engine(0, shared_gpu=True)
 # ZeroGPU makes them available in each request without training or reloading data.
 for scene, item in CATALOG.items():
     engine.models[scene] = load_model(item['checkpoint'])
+    print(f'Loaded {scene} Gaussian model', flush=True)
 
 
 def gpu_duration(request):
