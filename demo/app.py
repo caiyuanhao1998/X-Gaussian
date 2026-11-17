@@ -242,7 +242,7 @@ def build_app(worker):
     app.mount('/viewer',StaticFiles(directory=ROOT/'static/viewer'),name='viewer')
     app.mount('/mesh-viewer',StaticFiles(directory=ROOT/'static/mesh-viewer'),name='mesh-viewer')
     app.mount('/demo-assets',StaticFiles(directory=ROOT/'static/assets'),name='assets')
-    return gr.mount_gradio_app(app,demo,path='/',allowed_paths=[str(CACHE),str(REPO/'data/meshes'),str(ROOT/'static/assets/thumbnails')],show_error=True,show_api=False,max_file_size='512mb')
+    return gr.mount_gradio_app(app,demo,path='/',allowed_paths=[str(CACHE),str(REPO/'data/meshes'),str(ROOT/'static/assets/thumbnails')],show_error=True,show_api=False,max_file_size='512mb',ssr_mode=False)
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--host',default='0.0.0.0');parser.add_argument('--port',type=int,default=7860)

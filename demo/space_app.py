@@ -73,4 +73,4 @@ class SpaceWorker:
 
 
 if __name__ == '__main__':
-    uvicorn.run(build_app(SpaceWorker()), host='0.0.0.0', port=int(os.environ.get('PORT', 7860)))
+    uvicorn.run(build_app(SpaceWorker()), host='0.0.0.0', port=int(os.environ.get('GRADIO_SERVER_PORT', 7860)))
