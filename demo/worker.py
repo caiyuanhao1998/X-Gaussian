@@ -62,6 +62,7 @@ class Engine:
             mode=1,FoVx=fx,FoVy=fy,world_view_transform=view,full_proj_transform=view@projection,
             camera_center=torch.linalg.inv(view)[3,:3])
 
+    @torch.inference_mode()
     def volume_file(self,scene):
         pc,_=self.model(scene);item=self.catalog[scene];g=item['geometry']
         source=Path(item['checkpoint']).stat()
