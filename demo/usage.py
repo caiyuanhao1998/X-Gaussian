@@ -1,4 +1,4 @@
-"""Persistent, aggregate Space page visits, shared through the private stats dataset."""
+"""Persistent successful uses of the hosted X-Gaussian demo."""
 import copy
 import html
 import json
@@ -12,7 +12,7 @@ from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
 TIMEZONE = 'America/Los_Angeles'
-CHANNEL = 'x-gaussian-visits'
+CHANNEL = 'x-gaussian'
 LOG = logging.getLogger(__name__)
 
 
@@ -25,7 +25,7 @@ class HubStore:
     def read(self):
         info = self.api.dataset_info(self.repo, timeout=8)
         if not info.private:
-            raise ValueError('Traffic storage must be private')
+            raise ValueError('Usage storage must be private')
         request = Request(
             f'https://huggingface.co/datasets/{self.repo}/raw/{info.sha}/counts.json',
             headers={'Authorization': f'Bearer {self.token}'},
@@ -33,14 +33,14 @@ class HubStore:
         with urlopen(request, timeout=8) as response:
             data = json.load(response)
         if data.get('schema_version') != 1 or data.get('timezone') != TIMEZONE:
-            raise ValueError('Unexpected traffic schema')
+            raise ValueError('Unexpected usage schema')
         return data, info.sha
 
     def commit(self, data, parent):
         from huggingface_hub import CommitOperationAdd
         self.api.create_commit(
             repo_id=self.repo, repo_type='dataset', parent_commit=parent,
-            commit_message='Update X-Gaussian page visit counts',
+            commit_message='Update X-Gaussian successful use counts',
             operations=[CommitOperationAdd(
                 path_in_repo='counts.json',
                 path_or_fileobj=(json.dumps(data, indent=2) + '\n').encode(),
@@ -48,7 +48,7 @@ class HubStore:
         )
 
 
-class TrafficCounter:
+class UsageCounter:
     def __init__(self, store):
         self.store, self.cached, self.cache_time = store, None, 0
         self.lock = threading.RLock()
@@ -82,14 +82,20 @@ class TrafficCounter:
     def start(self):
         now = datetime.now(timezone.utc).isoformat()
         def initialize(data):
-            if CHANNEL in data['started_at']:
-                return False
-            data['started_at'][CHANNEL] = now
-            return True
+            changed = False
+            # Retire the former visit metric without converting it to usage.
+            if data['started_at'].pop('x-gaussian-visits', None) is not None:changed = True
+            for day, counts in list(data['days'].items()):
+                if 'x-gaussian-visits' in counts:
+                    del counts['x-gaussian-visits'];changed = True
+                if not counts:del data['days'][day]
+            if CHANNEL not in data['started_at']:
+                data['started_at'][CHANNEL] = now;changed = True
+            return changed
         try:
             return self._update(initialize)
         except Exception as error:
-            LOG.warning('Traffic initialization unavailable (%s)', type(error).__name__)
+            LOG.warning('Usage initialization unavailable (%s)', type(error).__name__)
             return False
 
     def record(self, *, now=None, event_id=None):
@@ -108,7 +114,7 @@ class TrafficCounter:
             return self._update(increment)
         except Exception as error:
             # Statistics must not interrupt volume viewing or GPU inference.
-            LOG.warning('Traffic update unavailable (%s)', type(error).__name__)
+            LOG.warning('Usage update unavailable (%s)', type(error).__name__)
             return False
 
     def summary(self, *, now=None):
@@ -131,13 +137,13 @@ class TrafficCounter:
 
     def badges(self):
         data = self.summary()
-        values = [('Visits · 30 days', data['last_30_days'] if data else None),
+        values = [('Uses · 30 days', data['last_30_days'] if data else None),
                   ('Today', data['today'] if data else None)]
         chips = ''.join(
-            '<span class="traffic-chip"><span>' + html.escape(label) + '</span><b>'
+            '<span class="usage-chip"><span>' + html.escape(label) + '</span><b>'
             + (f'{value:,}' if value is not None else '—') + '</b></span>'
             for label, value in values
         )
-        return ('<div class="traffic-counts" aria-label="Page visits" '
-                'title="Page opens, counted once per page session; America/Los_Angeles. '
+        return ('<div class="usage-counts" aria-label="Successful uses" '
+                'title="Successful user-requested X-ray renders and mesh exports; America/Los_Angeles. '
                 '30 days includes today and the preceding 29 dates.">' + chips + '</div>')

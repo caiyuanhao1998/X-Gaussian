@@ -65,5 +65,5 @@ footer{display:none!important}.app-header{display:flex;gap:12px;align-items:cent
 /* Keep positioned image/canvas layers above the viewport background. */
 #volume-panel,#projection-panel,#slice-panel,#mesh-panel{contain:none!important;isolation:isolate}
 
-/* Aggregate page visits beside the Space title. */
-.app-header{flex-wrap:wrap}.traffic-counts{margin-left:auto;display:flex;align-items:center;gap:8px;flex:0 0 auto}.traffic-chip{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #dce0e4;border-radius:999px;font-size:12px;line-height:1.2;background:#fafbfc;color:#717984}.traffic-chip b{font-variant-numeric:tabular-nums;color:#171717;font-weight:600}@media(max-width:760px){.traffic-counts{margin-left:37px}}
+/* Successful usage totals beside the Space title. */
+.app-header{flex-wrap:wrap}.usage-counts{margin-left:auto;display:flex;align-items:center;gap:8px;flex:0 0 auto}.usage-chip{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #dce0e4;border-radius:999px;font-size:12px;line-height:1.2;background:#fafbfc;color:#717984}.usage-chip b{font-variant-numeric:tabular-nums;color:#171717;font-weight:600}@media(max-width:760px){.usage-counts{margin-left:37px}}

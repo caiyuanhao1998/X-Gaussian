@@ -100,11 +100,14 @@ def render_meta(result):
     shape=' × '.join(map(str,result['shape']))
     return f'<div class="render-meta"><span><b>{shape}</b> pixels</span><span><b>{result["compute_ms"]:.1f} ms</b> CUDA</span><span>{result["azimuth"]:.1f}° / {result["elevation"]:.1f}°</span></div>'
 
-def build_app(worker,mount=True,traffic=None):
+def build_app(worker,mount=True,usage=None):
     def render_projection(scene,azimuth,elevation,exposure,invert):
         result=worker.call('render',scene,azimuth=azimuth,elevation=elevation,exposure=exposure,invert=invert)
         return result['image'],result['download'],render_meta(result)
-    def render_current(scene,azimuth,elevation,exposure,invert):return (*render_projection(scene,azimuth,elevation,exposure,invert),azimuth,elevation)
+    def render_current(scene,azimuth,elevation,exposure,invert):
+        result=(*render_projection(scene,azimuth,elevation,exposure,invert),azimuth,elevation)
+        if usage:usage.record()
+        return (*result,header_html())
     def get_slice(scene,axis,position):
         result=worker.call('slice',scene,axis=AXES[axis],position=position)
         caption=f'<div class="slice-caption">{axis} · slice {result["index"]+1} / {result["total"]}</div>'
@@ -135,13 +138,15 @@ def build_app(worker,mount=True,traffic=None):
         except gr.Error as exc:
             gr.Warning(getattr(exc,'message',str(exc)),duration=6);return tuple(gr.skip() for _ in range(16))
     def export_surface(scene):
-        yield gr.update(value='Exporting…',interactive=False),gr.skip(),'Extracting the CT surface…',gr.skip()
+        yield gr.update(value='Exporting…',interactive=False),gr.skip(),'Extracting the CT surface…',gr.skip(),gr.skip()
         try:
             result=worker.call('mesh',scene);MESHES[scene]=result
-            yield gr.update(value='Export Mesh',interactive=True),gr.update(value=result['file'],visible=True),f'{result["vertices"]:,} vertices · {result["faces"]:,} faces',mesh_iframe(scene)
+            frame=mesh_iframe(scene)
+            if usage:usage.record()
+            yield gr.update(value='Export Mesh',interactive=True),gr.update(value=result['file'],visible=True),f'{result["vertices"]:,} vertices · {result["faces"]:,} faces',frame,header_html()
         except gr.Error as exc:
             gr.Warning(getattr(exc,'message',str(exc)),duration=6)
-            yield gr.update(value='Export Mesh',interactive=True),gr.skip(),'Mesh export failed.',gr.skip()
+            yield gr.update(value='Export Mesh',interactive=True),gr.skip(),'Mesh export failed.',gr.skip(),gr.skip()
     theme=gr.themes.Base(primary_hue='slate',neutral_hue='slate',font=['Arial','Helvetica','sans-serif']).set(
         body_background_fill='#ffffff',body_background_fill_dark='#ffffff',body_text_color='#171717',body_text_color_dark='#171717',
         block_background_fill='#ffffff',block_background_fill_dark='#ffffff',block_border_color='#dce0e4',block_border_color_dark='#dce0e4',
@@ -152,14 +157,10 @@ def build_app(worker,mount=True,traffic=None):
                    js="()=>{document.documentElement.classList.remove('dark');document.body.classList.remove('dark');}") as demo:
         scene=gr.State('head')
         def header_html():
-            return HEADER.rsplit('</div>',1)[0]+traffic.badges()+'</div>' if traffic else HEADER
+            return HEADER.rsplit('</div>',1)[0]+usage.badges()+'</div>' if usage else HEADER
         header=gr.HTML(header_html(),padding=False)
-        if traffic:
-            visited=gr.State(False)
-            def record_visit(seen):
-                if not seen:traffic.record()
-                return True,header_html()
-            demo.load(record_visit,[visited],[visited,header],queue=False,api_name=False)
+        if usage:
+            demo.load(header_html,outputs=[header],queue=False,api_name=False)
 
         with gr.Row(equal_height=True,elem_id='scene-selector-row'):
             with gr.Column(scale=0,min_width=118,elem_id='scene-toolbar'):
@@ -217,15 +218,15 @@ def build_app(worker,mount=True,traffic=None):
                       demo.load(load_scene,[scene,axis,position,invert,view_mode],output,concurrency_id='cuda',concurrency_limit=1,show_progress='minimal'),
                       view_mode.change(iframe,[scene,view_mode,axis,position],[viewport],queue=False,show_progress='hidden')]:
             event.then(fn=None,inputs=preview_inputs,outputs=[],js=PREVIEW_JS,queue=False)
-        mesh_button.click(export_surface,[scene],[mesh_button,mesh_download,mesh_status,mesh_preview],concurrency_id='cuda',concurrency_limit=1,show_progress='hidden')
-        render_button.click(render_current,[scene,azimuth,elevation,exposure,invert],[projection,download,stats,azimuth,elevation],
+        mesh_button.click(export_surface,[scene],[mesh_button,mesh_download,mesh_status,mesh_preview,header],concurrency_id='cuda',concurrency_limit=1,show_progress='hidden')
+        render_button.click(render_current,[scene,azimuth,elevation,exposure,invert],[projection,download,stats,azimuth,elevation,header],
             js="""(scene,a,e,exposure,invert)=>{const v=document.querySelector('#volume-frame')?.contentWindow?.__xray;if(v?.ready&&v.getScannerView){const c=v.getScannerView();a=c.azimuth;e=Math.max(-80,Math.min(80,c.elevation));}return [scene,a,e,exposure,invert];}""",
             concurrency_id='cuda',concurrency_limit=1,show_progress='minimal')
         for event in [position.change,axis.change]:event(get_slice,[scene,axis,position],[slice_image,slice_caption,volume_download],concurrency_id='cuda',concurrency_limit=1,trigger_mode='always_last',show_progress='hidden')
     demo.queue(max_size=16,default_concurrency_limit=1);app=FastAPI()
-    if traffic:
-        @app.get('/api/traffic')
-        def traffic_summary():return traffic.summary() or {'available':False}
+    if usage:
+        @app.get('/api/usage')
+        def usage_summary():return usage.summary() or {'available':False}
     @app.get('/health')
     def health():return dict(ok=worker.available(),scenes=ORDER,gpu=worker.info.get('device'))
     @app.get('/api/scene/{scene_id}')
