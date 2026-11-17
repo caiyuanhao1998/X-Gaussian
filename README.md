@@ -124,6 +124,7 @@ The coordinate system in circular cone-beam X-ray scanning follows the OpenCV st
 
 Use Linux with a CUDA 11.8 toolkit (`nvcc`). The environment installs Python 3.9,
 PyTorch 2.1.2 and GCC 11 for both 2D projection rendering and 3D CT reconstruction.
+The demo interface uses Python 3.11.
 
 ```shell
 git clone https://github.com/caiyuanhao1998/X-Gaussian.git
@@ -133,6 +134,8 @@ conda activate x_gaussian
 export CUDA_HOME=/usr/local/cuda-11.8
 export PATH="$CUDA_HOME/bin:$PATH"
 bash install.sh
+conda create -n x_gaussian_demo python=3.11 -y
+conda run -n x_gaussian_demo python -m pip install -r demo/requirements.txt
 ```
 
 ## 2. Dataset
@@ -203,12 +206,10 @@ Try our [online demo](https://huggingface.co/spaces/CaiYuanhao/X-Gaussian), or r
 
 [![X-Gaussian interactive demo](fig/gradio_demo.png)](https://huggingface.co/spaces/CaiYuanhao/X-Gaussian)
 
-With the `x_gaussian` environment activated, install the interface in a separate Python 3.11 environment and launch:
+Launch the demo:
 
 ```shell
-conda create -n x_gaussian_demo python=3.11 -y
-conda run -n x_gaussian_demo pip install -r demo/requirements.txt
-conda run --no-capture-output -n x_gaussian_demo python demo/app.py --cuda-python "$CONDA_PREFIX/bin/python"
+bash demo/run.sh
 ```
 
 Open `http://127.0.0.1:7860`. Example weights and browser assets are downloaded from Hugging Face when missing; no projection dataset is required.
