@@ -100,7 +100,7 @@ def render_meta(result):
     shape=' × '.join(map(str,result['shape']))
     return f'<div class="render-meta"><span><b>{shape}</b> pixels</span><span><b>{result["compute_ms"]:.1f} ms</b> CUDA</span><span>{result["azimuth"]:.1f}° / {result["elevation"]:.1f}°</span></div>'
 
-def build_app(worker,mount=True):
+def build_app(worker,mount=True,traffic=None):
     def render_projection(scene,azimuth,elevation,exposure,invert):
         result=worker.call('render',scene,azimuth=azimuth,elevation=elevation,exposure=exposure,invert=invert)
         return result['image'],result['download'],render_meta(result)
@@ -150,7 +150,17 @@ def build_app(worker,mount=True):
     default=CATALOG['head']
     with gr.Blocks(title='X-Gaussian · ECCV 2024',theme=theme,css=(ROOT/'static/assets/app.css').read_text(),head=HEAD,
                    js="()=>{document.documentElement.classList.remove('dark');document.body.classList.remove('dark');}") as demo:
-        scene=gr.State('head');gr.HTML(HEADER,padding=False)
+        scene=gr.State('head')
+        def header_html():
+            return HEADER.rsplit('</div>',1)[0]+traffic.badges()+'</div>' if traffic else HEADER
+        header=gr.HTML(header_html(),padding=False)
+        if traffic:
+            visited=gr.State(False)
+            def record_visit(seen):
+                if not seen:traffic.record()
+                return True,header_html()
+            demo.load(record_visit,[visited],[visited,header],queue=False,api_name=False)
+
         with gr.Row(equal_height=True,elem_id='scene-selector-row'):
             with gr.Column(scale=0,min_width=118,elem_id='scene-toolbar'):
                 gr.HTML('<div class="scene-heading">Choose a scene</div>',padding=False)
@@ -213,6 +223,9 @@ def build_app(worker,mount=True):
             concurrency_id='cuda',concurrency_limit=1,show_progress='minimal')
         for event in [position.change,axis.change]:event(get_slice,[scene,axis,position],[slice_image,slice_caption,volume_download],concurrency_id='cuda',concurrency_limit=1,trigger_mode='always_last',show_progress='hidden')
     demo.queue(max_size=16,default_concurrency_limit=1);app=FastAPI()
+    if traffic:
+        @app.get('/api/traffic')
+        def traffic_summary():return traffic.summary() or {'available':False}
     @app.get('/health')
     def health():return dict(ok=worker.available(),scenes=ORDER,gpu=worker.info.get('device'))
     @app.get('/api/scene/{scene_id}')

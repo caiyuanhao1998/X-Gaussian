@@ -16,6 +16,7 @@ from assets import CACHE, REPO, ROOT
 print('Loading example checkpoint metadata', flush=True)
 from worker import Engine, CATALOG, load_model
 from app import build_app
+from traffic import TrafficCounter
 
 engine = Engine(0, shared_gpu=True)
 # Keep the eight small Gaussian models in the parent CUDA emulation state.
@@ -72,7 +73,10 @@ class SpaceWorker:
 
 
 if __name__ == '__main__':
-    demo, resource_routes = build_app(SpaceWorker(), mount=False)
+    traffic = TrafficCounter.from_env()
+    if traffic.store is not None:traffic.start()
+    else:traffic = None
+    demo, resource_routes = build_app(SpaceWorker(), mount=False, traffic=traffic)
     # Gradio.launch triggers ZeroGPU's startup registration. Add our resource
     # routes ahead of Gradio's catch-all, then keep the launched app alive.
     live_app, _, _ = demo.launch(
