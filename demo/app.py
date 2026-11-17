@@ -100,7 +100,7 @@ def render_meta(result):
     shape=' × '.join(map(str,result['shape']))
     return f'<div class="render-meta"><span><b>{shape}</b> pixels</span><span><b>{result["compute_ms"]:.1f} ms</b> CUDA</span><span>{result["azimuth"]:.1f}° / {result["elevation"]:.1f}°</span></div>'
 
-def build_app(worker):
+def build_app(worker,mount=True):
     def render_projection(scene,azimuth,elevation,exposure,invert):
         result=worker.call('render',scene,azimuth=azimuth,elevation=elevation,exposure=exposure,invert=invert)
         return result['image'],result['download'],render_meta(result)
@@ -242,6 +242,7 @@ def build_app(worker):
     app.mount('/viewer',StaticFiles(directory=ROOT/'static/viewer'),name='viewer')
     app.mount('/mesh-viewer',StaticFiles(directory=ROOT/'static/mesh-viewer'),name='mesh-viewer')
     app.mount('/demo-assets',StaticFiles(directory=ROOT/'static/assets'),name='assets')
+    if not mount:return demo,app
     return gr.mount_gradio_app(app,demo,path='/',allowed_paths=[str(CACHE),str(REPO/'data/meshes'),str(ROOT/'static/assets/thumbnails')],show_error=True,show_api=False,max_file_size='512mb',ssr_mode=False)
 
 if __name__=='__main__':

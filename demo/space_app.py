@@ -12,8 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 print('Initializing X-Gaussian ZeroGPU runtime', flush=True)
 import spaces
 import gradio as gr
-import uvicorn
-from assets import CACHE
+from assets import CACHE, REPO, ROOT
 print('Loading example checkpoint metadata', flush=True)
 from worker import Engine, CATALOG, load_model
 from app import build_app
@@ -73,4 +72,14 @@ class SpaceWorker:
 
 
 if __name__ == '__main__':
-    uvicorn.run(build_app(SpaceWorker()), host='0.0.0.0', port=int(os.environ.get('GRADIO_SERVER_PORT', 7860)))
+    demo, resource_routes = build_app(SpaceWorker(), mount=False)
+    # Gradio.launch triggers ZeroGPU's startup registration. Add our resource
+    # routes ahead of Gradio's catch-all, then keep the launched app alive.
+    live_app, _, _ = demo.launch(
+        server_name='0.0.0.0', server_port=int(os.environ.get('GRADIO_SERVER_PORT', 7860)),
+        prevent_thread_lock=True, ssr_mode=False, show_error=True, show_api=False,
+        max_file_size='512mb',
+        allowed_paths=[str(CACHE), str(REPO/'data/meshes'), str(ROOT/'static/assets/thumbnails')],
+    )
+    live_app.router.routes[0:0] = resource_routes.router.routes
+    demo.block_thread()
